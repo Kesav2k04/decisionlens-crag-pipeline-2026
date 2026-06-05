@@ -1,0 +1,17 @@
+﻿# Python environment artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+
+# System-level download caches configured today
+.pip_cache/
+.hf_cache/
+
+# Operating system noise
+.DS_Store
+Thumbs.db
+Desktop.ini
