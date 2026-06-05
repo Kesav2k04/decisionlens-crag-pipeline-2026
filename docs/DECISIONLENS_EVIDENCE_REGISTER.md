@@ -46,13 +46,17 @@ Status values:
 | PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Pending | Needs test set coverage. | Kesav/Karthi | Do not claim all categories until tested. |
 
 
+
+
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
 |---|---|---|---|---|---|
-| DATA-001 | IFAB/FIFA laws can be used as official rule source if public and allowed. | Verified | Laws of the Game 2025/26 Document: https://downloads.theifab.com/downloads/laws-of-the-game-2025-26-single-pages?l=en (Downloaded: 2026-06-05) | Kesav | Store source URL and retrieval date. |
-| DATA-002 | VAR protocol source is available and parseable. | Verified | IFAB VAR Official Updates: https://theifab.com (Downloaded: 2026-06-05) | Kesav | Verify before indexing. |
+| DATA-001 | IFAB/FIFA laws can be used as official rule source if public and allowed. | Verified | Laws of the Game 2025/26 Document: https://downloads.theifab.com/downloads/laws-of-the-game-2025-26-single-pages?l=en (Downloaded: 2026-06-05) | Kesav | Extracted size: 2,376,657 bytes. Generated 80 discrete contextual chunks. |
+| DATA-002 | VAR protocol source is available and parseable. | Verified | IFAB VAR Official Updates: https://theifab.com (Downloaded: 2026-06-05) | Kesav | Extracted size: 81,221 bytes. Generated 5 discrete contextual chunks. |
 | DATA-003 | football-data.org is usable for live metadata. | Pending | Need account, docs, and endpoint test. | Karthi | Do not treat as VAR truth source. |
 | DATA-004 | StatsBomb open data can support historical event examples. | Pending | Need license check and sample data test. | Kesav | Not live 2026 data. |
 | DATA-005 | ESPN or undocumented APIs are safe for submission. | Rejected | Unsupported and risky as a required dependency. | Kesav | Can be future work only if legal/allowed. |
+
+
 
 
 
@@ -87,7 +91,19 @@ Status values:
 
 ## Daily Evidence Log
 
-Use this section at the end of each day.
+### 2026-06-05 (Day 1 Milestone Achieved)
+
+* **Kesav (RAG Pipeline Lead):** 
+  - Mitigated a runtime thread-lock bug inside the local environment configuration.
+  - Developed and ran a custom zero-dependency layout parsing pipeline to unpack the official IFAB rulesets.
+  - Successfully ran `pipeline/chunk_documents.ps1`, generating 80 discrete text blocks for the primary rules manual and 5 discrete blocks for the VAR guidelines.
+  - Initialized a brand new Git system baseline locally and forced synchronization to the public GitHub repository layout `Kesav2k04/decisionlens-crag-pipeline-2026`.
+
+* **Karthi (Agent Loop Lead):** 
+  - Bypassed international credit card verification e-mandate blocks by moving development to local offline infrastructure.
+  - Installed Ollama locally on Windows and successfully cached the `granite3.1-dense:2b` model weights.
+  - Designed and ran `pipeline/test_local_granite.py` with an increased 300-second timeout threshold to safely allow model initialization into memory.
+  - Verified perfect programmatic output processing the four official VAR review categories (Goals, Penalty kicks, Direct red cards, Mistaken identity).
 
 ### 2026-05-28
 
