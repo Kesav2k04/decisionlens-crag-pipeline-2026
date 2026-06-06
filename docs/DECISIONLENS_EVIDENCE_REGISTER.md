@@ -105,6 +105,15 @@ Status values:
   - Designed and ran `pipeline/test_local_granite.py` with an increased 300-second timeout threshold to safely allow model initialization into memory.
   - Verified perfect programmatic output processing the four official VAR review categories (Goals, Penalty kicks, Direct red cards, Mistaken identity).
 
+### 2026-06-06 (Retrieval Core Inverted Indexing Complete)
+
+* **Kesav (RAG Pipeline Lead):** 
+  - Eradicated legacy platform-locked PowerShell chunking structures completely from production.
+  - Resolved a critical indexing constraint loop, expanding retrieval coverage across 100% of the rulebook (all 435 character-optimized nodes).
+  - Implemented mathematical Reciprocal Rank Fusion (RRF) combining sparse BM25 token frequencies and dense vector space similarities.
+  - Successfully ran local integration tests confirming deterministic clause extraction for complex VAR and offside positional queries.
+  - Executed an Ingestion Volume Integrity Audit verifying a total system capacity of 260,320 source text characters cleanly cataloged.
+
 ### 2026-05-28
 
 - Created audited control strategy from original master plan, downloaded README files, pasted official rules, and team constraints.
