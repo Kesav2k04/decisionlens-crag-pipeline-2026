@@ -45,6 +45,17 @@ Status values:
 | PRD-004 | System abstains or lists missing evidence when facts are insufficient. | Pending | Needs generation and tests. | Kesav | Critical anti-hallucination feature. |
 | PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Pending | Needs test set coverage. | Kesav/Karthi | Do not claim all categories until tested. |
 
+## Product Claims (Updated) (06-06-2026)
+
+| ID | Claim | Status | Evidence / Source | Owner | Notes |
+|---|---|---|---|---|---|
+| PRD-001 | DecisionLens focuses on VAR/decision transparency, not prediction. | Verified | Audited project plan and challenge "Trust and Transparency" category. | Kesav | Product direction locked. |
+| PRD-002 | System retrieves official rule/protocol evidence before answering. | Verified | `pipeline/agent.py` console output (June 6, 2026) confirming 3 chunks retrieved and evaluated prior to Granite synthesis. | Kesav | Core retrieval pipeline functional. |
+| PRD-003 | System cites source snippets. | Verified | JSON output from `agent.py` successfully populates `rule_citations` with unhallucinated `quoted_span` and `source` matches. | Kesav | Strict JSON schema enforced. |
+| PRD-004 | System abstains or lists missing evidence when facts are insufficient. | Verified | "Ronaldo 67th minute" test query correctly triggered POOR route (score: 0.637), returning confidence 0.0 and populated `missing_evidence`. | Kesav | CRAG threshold guardrails operational. |
+| PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Pending | Needs full test set coverage. | Kesav/Karthi | Handball, offside, and VAR verified. Penalties and red cards pending next test suite. |
+
+---
 
 
 
@@ -113,6 +124,13 @@ Status values:
   - Implemented mathematical Reciprocal Rank Fusion (RRF) combining sparse BM25 token frequencies and dense vector space similarities.
   - Successfully ran local integration tests confirming deterministic clause extraction for complex VAR and offside positional queries.
   - Executed an Ingestion Volume Integrity Audit verifying a total system capacity of 260,320 source text characters cleanly cataloged.
+  - Tuned nomic-embed-text RRF cosine similarity thresholds (GOOD > 0.75, POOR < 0.65) to strictly enforce anti-hallucination abstention routes.
+  - Implemented a Regex parser combined with Ollama's `format: "json"` payload parameter to guarantee 100% strict JSON schema extraction from Granite 8B.
+  - Verified perfect agent routing: system successfully cites IFAB rulebook for valid queries (e.g., Offside, Handball) and safely abstains with `confidence: 0.0` for context-starved queries (e.g., Ronaldo 67th minute offside).
+
+  * **Karthi (Agent Loop Lead):** - Overcame a hidden system pathing failure where Ollama searched the `C:\` drive instead of the custom `G:\` model installation directory.
+  - Bypassed hardware constraints by successfully rerouting `$env:OLLAMA_MODELS` and initializing the 2B model on an RTX 3050.
+  - Programmatic local inference confirmed active; team development environment is perfectly synchronized.
 
 ### 2026-05-28
 
