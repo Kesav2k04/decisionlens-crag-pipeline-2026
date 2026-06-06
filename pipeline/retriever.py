@@ -43,17 +43,16 @@ class HybridRetriever:
         print("[+] Loading purified text database...")
         self.chunks = load_chunks()
         
-        print(f"[+] Vectorizing knowledge base via local Ollama GPU weights...")
+        print(f"[+] Vectorizing KNOWLEDGE BASE across ALL {len(self.chunks)} elements via local GPU...")
         raw_embeddings = []
-        max_idx = min(200, len(self.chunks))
-        for i in range(max_idx):
+        
+        # FIX: Loop through every single available chunk without truncation boundaries
+        total_chunks = len(self.chunks)
+        for i in range(total_chunks):
             vector = get_embedding(self.chunks[i]["text"])
             raw_embeddings.append(vector)
-            if i % 50 == 0:
-                print(f"    -> Indexed embeddings: {i}/{max_idx}")
-        
-        while len(raw_embeddings) < len(self.chunks):
-            raw_embeddings.append([0.0] * 768)
+            if i % 50 == 0 or i == total_chunks - 1:
+                print(f"    -> Progress: Indexed embedding nodes {i+1}/{total_chunks}")
                 
         self.embeddings = np.array(raw_embeddings)
         print(f"[+] Hybrid Retriever online. Total index capacity: {len(self.chunks)} items.")
