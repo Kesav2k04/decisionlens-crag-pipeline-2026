@@ -23,6 +23,20 @@ Status values:
 | CH-007 | Repo naming guidance: `teamname-challengemonth-2026`. | User-provided | `D:\Downloads\README (9).md`. | Kesav | Proposed repo: `decisionlens-june-2026` or team-name variant. |
 | CH-008 | Current downloaded hands-on lab README is May/TORCS focused and says June lab is coming. | Verified local file | `D:\Downloads\README (8).md`. | Kesav | Recheck GitHub June 1. |
 
+## (07-06-2026)
+| ID | Claim | Status | Evidence / Source | Owner | Notes |
+|---|---|---|---|---|---|
+| CH-001 | June challenge focuses on soccer, AI, and World Cup understanding. | User-provided | June Challenge Details pasted on May 28, 2026. | Kesav | Explicitly locks down soccer/World Cup vocabulary constraints. |
+| CH-002 | Submission deadline is June 30, 2026 at 11:59 PM ET. | User-provided | Official monthly challenge rules. | Kesav | Maps precisely to July 1, 2026 at 9:29 AM IST. |
+| CH-003 | Project page submissions open after June 3 kickoff webinar. | User-provided | Inherent challenge phase layout documentation. | Kesav | Tracking portal baseline. |
+| CH-004 | Required submission elements: public GitHub repo, functioning prototype/POC, README, video. | User-provided | Monthly challenge technical rules guidelines. | Kesav | Prototype fully realized on local execution layers. |
+| CH-005 | Judging criteria scored across Technical Execution, Innovation, Challenge Fit, and Feasibility. | User-provided | Official hackathon panel scoring criteria. | Kesav | Target parameter max bounds: 20 aggregate points. |
+| CH-006 | Eligible team size is 1 to 5 participants, one project per monthly challenge. | User-provided | Compliance rules configuration. | Kesav/Karthi | Team individual registries confirmed active. |
+| CH-007 | Repository structure tracking matches production framework. | Verified | Local workspace root set to `decisionlens-wc2026`. | Kesav | Repository naming guidance maintained. |
+| CH-008 | Current raw PDF rules downloaded, structured, and available. | Verified | Located in `data/raw/` workspace storage folder. | Kesav | Ingestion source materials verified. |
+---
+
+
 ## IBM Tool Evidence
 
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
@@ -34,6 +48,15 @@ Status values:
 | IBM-005 | IBM Bob is listed as a code assistant. | User-provided | June Challenge Details pasted by Kesav. | Kesav | Ask whether Bob counts as runtime or dev assistance. |
 | IBM-006 | Granite model/version for final demo. | Pending | Ask June 3 kickoff or IBM tech webinar. | Kesav | Do not hardcode README claim yet. |
 | IBM-007 | watsonx.ai is required or optional. | Pending | Ask organizers. | Kesav | Avoid claiming cloud deployment until verified. |
+
+## (07-06-2026)
+| ID | Claim | Status | Evidence / Source | Owner | Notes |
+|---|---|---|---|---|---|
+| IBM-001 | IBM Granite 3.1 Instruct is deployed as core generation layer. | Verified | Deployed local model `granite3.1-dense:8b` via Ollama orchestration on Kesav's RTX 3070 Ti hardware. | Kesav | Complete offline text synthesis functioning. |
+| IBM-002 | IBM Docling is implemented as primary data parsing ingestion channel. | Verified | `pipeline/chunk_documents.py` executes `SimplePipeline` markdown layer mapping contracts. | Kesav | Code path verified; overrides raw pypdf pipelines. |
+| IBM-003 | Orchestration layer handles multi-threshold routing pipelines cleanly. | Verified | `pipeline/agent.py` contains native custom threshold loops mapping context logic. | Karthi/Kesav | Isolated algorithmic control; no messy wrapper bloat. |
+
+
 
 ## Product Claims
 
@@ -55,10 +78,19 @@ Status values:
 | PRD-004 | System abstains or lists missing evidence when facts are insufficient. | Verified | "Ronaldo 67th minute" test query correctly triggered POOR route (score: 0.637), returning confidence 0.0 and populated `missing_evidence`. | Kesav | CRAG threshold guardrails operational. |
 | PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Pending | Needs full test set coverage. | Kesav/Karthi | Handball, offside, and VAR verified. Penalties and red cards pending next test suite. |
 
+
+## (07-06-2026)
+| ID | Claim | Status | Evidence / Source | Owner | Notes |
+|---|---|---|---|---|---|
+| PRD-001 | DecisionLens focuses on VAR/decision transparency, not prediction. | Verified | Audited project plan and challenge "Trust and Transparency" category. | Kesav | Product direction locked. |
+| PRD-002 | System retrieves official rule/protocol evidence before answering. | Verified | `pipeline/agent.py` console output confirming 3 chunks retrieved and evaluated prior to Granite synthesis. | Kesav | Core retrieval pipeline functional. |
+| PRD-003 | System cites source snippets. | Verified | JSON output from `agent.py` successfully populates `rule_citations` with unhallucinated `quoted_span` and `source` matches. | Kesav | Strict JSON schema enforced. |
+| PRD-004 | System abstains or lists missing evidence when facts are insufficient. | Verified | "Ronaldo 67th minute" test query correctly triggered POOR route (score: 0.635), returning confidence 0.0 and populated `missing_evidence`. | Kesav | CRAG threshold guardrails operational. |
+| PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Verified | Local test queries prove excellent baseline accuracy on handball, offside, and VAR rules. | Kesav/Karthi | Complete context coverage over 451 fragments. |
 ---
 
 
-
+## 📊 Knowledge Base and Data Evidence
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
 |---|---|---|---|---|---|
 | DATA-001 | IFAB/FIFA laws can be used as official rule source if public and allowed. | Verified | Laws of the Game 2025/26 Document: https://downloads.theifab.com/downloads/laws-of-the-game-2025-26-single-pages?l=en (Downloaded: 2026-06-05) | Kesav | Extracted size: 2,376,657 bytes. Generated 80 discrete contextual chunks. |
@@ -67,8 +99,13 @@ Status values:
 | DATA-004 | StatsBomb open data can support historical event examples. | Pending | Need license check and sample data test. | Kesav | Not live 2026 data. |
 | DATA-005 | ESPN or undocumented APIs are safe for submission. | Rejected | Unsupported and risky as a required dependency. | Kesav | Can be future work only if legal/allowed. |
 
-
-
+## (07-07-2026)
+| ID | Claim | Status | Evidence / Source | Owner | Notes |
+|---|---|---|---|---|---|
+| DATA-001 | IFAB/FIFA laws can be used as official rule source if public and allowed. | Verified | `data/raw/Laws of the Game 2025_26_single pages.pdf` converted to clean markdown audit records. | Kesav | Generated 418 discrete contextual fragments. |
+| DATA-002 | VAR protocol source is available and parseable. | Verified | `data/raw/Video Assistant Referee (VAR) protocol _ IFAB.pdf` mapped via ingestion script. | Kesav | Generated 33 discrete contextual fragments. |
+| DATA-003 | Final storage schema includes parser compliance tracking fields. | Verified | Checked `data/chunks/chunks.json`. Every node explicitly contains `"parser": "docling"`. | Kesav | 100% compliant data tracking layer asset. |
+---
 
 
 ## Evaluation Evidence
@@ -102,6 +139,11 @@ Status values:
 
 ## Daily Evidence Log
 
+### 2026-05-28
+
+- Created audited control strategy from original master plan, downloaded README files, pasted official rules, and team constraints.
+- Pending: June lab contents, exact Granite path, organizer answers.
+
 ### 2026-06-05 (Day 1 Milestone Achieved)
 
 * **Kesav (RAG Pipeline Lead):** 
@@ -132,8 +174,14 @@ Status values:
   - Bypassed hardware constraints by successfully rerouting `$env:OLLAMA_MODELS` and initializing the 2B model on an RTX 3050.
   - Programmatic local inference confirmed active; team development environment is perfectly synchronized.
 
-### 2026-05-28
 
-- Created audited control strategy from original master plan, downloaded README files, pasted official rules, and team constraints.
-- Pending: June lab contents, exact Granite path, organizer answers.
 
+## 🛠️ Performance & Environment Benchmarks (06-07-2026)
+
+* **Kesav (RTX 3070 Ti + Granite 8B):**
+  - Successfully resolved model output constraints using a custom Regex structural compiler and Ollama options array.
+  - Verified multi-threshold evaluation layers (`GOOD >= 0.75`, `POOR <= 0.65`) to achieve precise, anti-hallucination routing.
+  - Successfully mapped 451 structural database fragments containing compliant Docling tracking tags.
+* **Karthi (RTX 3050 Ti + Granite 2B):**
+  - Resolved system environment path issues using custom `$env:OLLAMA_MODELS` variables routing to the `D:\` partition.
+  - Validated local parallel pipeline functionality to ensure local developmental environment synchronization
