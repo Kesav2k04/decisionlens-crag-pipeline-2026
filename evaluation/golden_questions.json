@@ -1,0 +1,502 @@
+﻿[
+  {
+    "id": "Q001",
+    "category": "handball",
+    "question": "What makes a handball offence under FIFA Law 12?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["hand", "arm", "deliberately"],
+    "source_law": "Law 12 - Handling the ball",
+    "should_abstain": false,
+    "ground_truth_excerpt": "It is an offence if a player deliberately touches the ball with their hand/arm, for example moving the hand/arm towards the ball"
+  },
+  {
+    "id": "Q002",
+    "category": "handball",
+    "question": "When is a handball considered to have made the body unnaturally bigger?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["unnaturally", "position", "hand", "arm"],
+    "source_law": "Law 12 - Handling the ball",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A player is considered to have made their body unnaturally bigger when the position of their hand/arm is not a consequence of, or justifiable by, the player's body movement for that specific situation"
+  },
+  {
+    "id": "Q003",
+    "category": "handball",
+    "question": "Can a goal be scored if the ball touches a player's arm accidentally before going in?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["goal", "hand", "arm"],
+    "source_law": "Law 12 - Handling the ball",
+    "should_abstain": false,
+    "ground_truth_excerpt": "scores in the opponents' goal: directly from their hand/arm, even if accidental, including by the goalkeeper; immediately after the ball has touched their hand/arm, even if accidental"
+  },
+  {
+    "id": "Q004",
+    "category": "handball",
+    "question": "Is a goalkeeper allowed to handle the ball inside their penalty area?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["goalkeeper", "penalty area", "hand"],
+    "source_law": "Law 12 - Handling the ball",
+    "should_abstain": false,
+    "ground_truth_excerpt": "The goalkeeper has the same restrictions on handling the ball as any other player outside the penalty area"
+  },
+  {
+    "id": "Q005",
+    "category": "handball",
+    "question": "What part of the arm is considered for determining handball offences?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["arm", "armpit"],
+    "source_law": "Law 12 - Handling the ball",
+    "should_abstain": false,
+    "ground_truth_excerpt": "the upper boundary of the arm is in line with the bottom of the armpit"
+  },
+  {
+    "id": "Q006",
+    "category": "handball",
+    "question": "What happens when a player handles the ball to stop a promising attack?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["caution", "handball"],
+    "source_law": "Law 12 - Cautionable offences",
+    "should_abstain": false,
+    "ground_truth_excerpt": "handles the ball to interfere with or stop a promising attack, except where the referee awards a penalty kick for a non-deliberate handball offence"
+  },
+  {
+    "id": "Q007",
+    "category": "handball",
+    "question": "Is it a handball offence if the ball hits the arm during a natural body movement?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["hand", "arm", "body movement"],
+    "source_law": "Law 12 - Handling the ball",
+    "should_abstain": false,
+    "ground_truth_excerpt": "the position of their hand/arm is not a consequence of, or justifiable by, the player's body movement for that specific situation"
+  },
+  {
+    "id": "Q008",
+    "category": "red_card",
+    "question": "What disciplinary action applies when a player denies a goal with a deliberate handball?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["sent off", "handball", "goal"],
+    "source_law": "Law 12 - Sending-off offences",
+    "should_abstain": false,
+    "ground_truth_excerpt": "denying the opposing team a goal or an obvious goal-scoring opportunity by committing a deliberate handball offence (except a goalkeeper within their penalty area)"
+  },
+  {
+    "id": "Q009",
+    "category": "offside",
+    "question": "What is the definition of an offside position in football?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["head", "body", "feet", "goal line"],
+    "source_law": "Law 11 - Offside position",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A player is in an offside position if: any part of the head, body or feet is in the opponents' half (excluding the halfway line) and any part of the head, body or feet is nearer to the opponents' goal line than both the ball and the second-last opponent"
+  },
+  {
+    "id": "Q010",
+    "category": "offside",
+    "question": "Are the hands and arms used to determine offside position?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["hands", "arms"],
+    "source_law": "Law 11 - Offside position",
+    "should_abstain": false,
+    "ground_truth_excerpt": "The hands and arms of all players, including the goalkeepers, are not considered. For the purposes of determining offside, the upper boundary of the arm is in line with the bottom of the armpit"
+  },
+  {
+    "id": "Q011",
+    "category": "offside",
+    "question": "Is it an offence to simply be in an offside position?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["offside position"],
+    "source_law": "Law 11 - Offside position",
+    "should_abstain": false,
+    "ground_truth_excerpt": "It is not an offence to be in an offside position"
+  },
+  {
+    "id": "Q012",
+    "category": "offside",
+    "question": "When does a player in an offside position commit an offside offence?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["offside", "interfering"],
+    "source_law": "Law 11 - Offside offence",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A player in an offside position at the moment the ball is played or touched by a team-mate is only penalised on becoming involved in active play"
+  },
+  {
+    "id": "Q013",
+    "category": "offside",
+    "question": "Can a player receive the ball from a goal kick without being offside?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["goal kick", "offside"],
+    "source_law": "Law 11 - No offence",
+    "should_abstain": false,
+    "ground_truth_excerpt": "There is no offside offence if a player receives the ball directly from: a goal kick"
+  },
+  {
+    "id": "Q014",
+    "category": "offside",
+    "question": "What restart is given when an offside offence occurs?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["indirect free kick", "offside"],
+    "source_law": "Law 11 - Offences and sanctions",
+    "should_abstain": false,
+    "ground_truth_excerpt": "If an offside offence occurs, the referee awards an indirect free kick where the offence occurred"
+  },
+  {
+    "id": "Q015",
+    "category": "offside",
+    "question": "Is a player offside if they receive the ball directly from a throw-in?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["throw-in", "offside"],
+    "source_law": "Law 11 - No offence",
+    "should_abstain": false,
+    "ground_truth_excerpt": "There is no offside offence if a player receives the ball directly from: a throw-in"
+  },
+  {
+    "id": "Q016",
+    "category": "offside",
+    "question": "What happens if an opponent deliberately plays the ball to a player in an offside position?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["deliberately", "opponent", "offside"],
+    "source_law": "Law 11 - Offside offence",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A player in an offside position receiving the ball from an opponent who deliberately played the ball, including by deliberate handball, is not considered to have gained an advantage"
+  },
+  {
+    "id": "Q017",
+    "category": "penalty",
+    "question": "When is a penalty kick awarded for a handball offence?",
+    "expected_decision_type": "penalty",
+    "must_contain_keywords": ["penalty", "handball", "penalty area"],
+    "source_law": "Law 12 - Direct free kick",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A direct free kick is awarded if a player commits any of the following offences: a handball offence (except for the goalkeeper within their penalty area)"
+  },
+  {
+    "id": "Q018",
+    "category": "penalty",
+    "question": "What is the procedure for a penalty kick?",
+    "expected_decision_type": "penalty",
+    "must_contain_keywords": ["penalty", "goalkeeper"],
+    "source_law": "Law 14 - The Penalty Kick",
+    "should_abstain": false,
+    "ground_truth_excerpt": "the ball is placed on the penalty mark"
+  },
+  {
+    "id": "Q019",
+    "category": "penalty",
+    "question": "What happens if a defender starts holding an attacker outside the penalty area and continues inside?",
+    "expected_decision_type": "penalty",
+    "must_contain_keywords": ["penalty kick", "holding"],
+    "source_law": "Law 12",
+    "should_abstain": false,
+    "ground_truth_excerpt": "If a defender starts holding an attacker outside the penalty area and continues holding inside the penalty area, the referee must award a penalty kick"
+  },
+  {
+    "id": "Q020",
+    "category": "red_card",
+    "question": "What disciplinary action applies when a non-deliberate handball denies a goal and a penalty is awarded?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["caution", "handball", "penalty"],
+    "source_law": "Law 12 - DOGSO",
+    "should_abstain": false,
+    "ground_truth_excerpt": "Where a player denies the opposing team a goal or an obvious goal-scoring opportunity by committing a non-deliberate handball offence and the referee awards a penalty kick, the offender is cautioned"
+  },
+  {
+    "id": "Q021",
+    "category": "red_card",
+    "question": "What offences result in a player being sent off under FIFA rules?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["sent off", "violent conduct"],
+    "source_law": "Law 12 - Sending-off offences",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A player, substitute or substituted player who commits any of the following offences is sent off: serious foul play; biting or spitting at someone; violent conduct; using offensive, insulting or abusive language and/or actions"
+  },
+  {
+    "id": "Q022",
+    "category": "red_card",
+    "question": "What constitutes serious foul play under FIFA Laws?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["serious foul play", "excessive force"],
+    "source_law": "Law 12 - Serious foul play",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A tackle or challenge that endangers the safety of an opponent or uses excessive force or brutality must be sanctioned as serious foul play"
+  },
+  {
+    "id": "Q023",
+    "category": "red_card",
+    "question": "When does denying an obvious goal-scoring opportunity result in a red card?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["goal-scoring opportunity", "penalty area"],
+    "source_law": "Law 12 - DOGSO",
+    "should_abstain": false,
+    "ground_truth_excerpt": "Where a player commits an offence against an opponent within their own penalty area which denies an opponent an obvious goal-scoring opportunity and the referee awards a penalty kick, the offender is cautioned if the offence was an attempt to play the ball"
+  },
+  {
+    "id": "Q024",
+    "category": "red_card",
+    "question": "What factors are considered when judging a denial of an obvious goal-scoring opportunity?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["distance", "goal", "defenders"],
+    "source_law": "Law 12 - DOGSO",
+    "should_abstain": false,
+    "ground_truth_excerpt": "The following must be considered: distance between the offence and the goal; general direction of the play; likelihood of keeping or gaining control of the ball; location and number of defenders"
+  },
+  {
+    "id": "Q025",
+    "category": "red_card",
+    "question": "Is a player sent off for entering the video operation room during a match?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["sent off", "video operation room"],
+    "source_law": "Law 12 - Sending-off offences",
+    "should_abstain": false,
+    "ground_truth_excerpt": "entering the video operation room (VOR)"
+  },
+  {
+    "id": "Q026",
+    "category": "red_card",
+    "question": "Can a player receive two separate cautions for two offences committed close together?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["caution", "offences"],
+    "source_law": "Law 12 - Cautionable offences",
+    "should_abstain": false,
+    "ground_truth_excerpt": "Where two separate cautionable offences are committed (even in close proximity), they should result in two cautions"
+  },
+  {
+    "id": "Q027",
+    "category": "var_reviewability",
+    "question": "What are the four categories of decisions that VAR can review?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["goal", "penalty", "red card", "mistaken identity"],
+    "source_law": "VAR Protocol - Reviewable decisions",
+    "should_abstain": false,
+    "ground_truth_excerpt": "Goal/no goal; Penalty kick/no penalty kick; Red card; Mistaken identity (when the referee cautions or sends off the wrong player)"
+  },
+  {
+    "id": "Q028",
+    "category": "var_reviewability",
+    "question": "Can coaches or players request a VAR review?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["coaches", "players", "review"],
+    "source_law": "VAR Protocol - Principles",
+    "should_abstain": false,
+    "ground_truth_excerpt": "As the VAR will automatically check every situation/decision, there is no need for coaches or players to request a review"
+  },
+  {
+    "id": "Q029",
+    "category": "var_reviewability",
+    "question": "Can a VAR decision override the referee without the referee initiating a review?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["referee", "review", "final decision"],
+    "source_law": "VAR Protocol - Principles",
+    "should_abstain": false,
+    "ground_truth_excerpt": "Only the referee can initiate a review; the VAR (and other match officials) can only recommend a review to the referee"
+  },
+  {
+    "id": "Q030",
+    "category": "var_reviewability",
+    "question": "Under what condition will the original referee decision be changed after a VAR review?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["original decision", "changed"],
+    "source_law": "VAR Protocol - Principles",
+    "should_abstain": false,
+    "ground_truth_excerpt": "The original decision given by the referee will not be changed unless the video review clearly shows that the decision was a clear and obvious error"
+  },
+  {
+    "id": "Q031",
+    "category": "var_reviewability",
+    "question": "What is an on-field review in the VAR process?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["on-field review", "referee", "replay"],
+    "source_law": "VAR Protocol - Review",
+    "should_abstain": false,
+    "ground_truth_excerpt": "shows the TV signal and goes to the referee review area to view replay footage – on-field review (OFR) – before making a final decision"
+  },
+  {
+    "id": "Q032",
+    "category": "var_reviewability",
+    "question": "Is there a time limit for the VAR review process?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["time limit", "accuracy"],
+    "source_law": "VAR Protocol - Principles",
+    "should_abstain": false,
+    "ground_truth_excerpt": "There is no time limit for the review process as accuracy is more important than speed"
+  },
+  {
+    "id": "Q033",
+    "category": "var_reviewability",
+    "question": "What happens to disciplinary action taken after an incident if that incident is later reviewed by VAR?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["disciplinary action", "cancelled"],
+    "source_law": "VAR Protocol - Principles",
+    "should_abstain": false,
+    "ground_truth_excerpt": "any disciplinary action taken/required during the post-incident period is not cancelled, even if the original decision is changed"
+  },
+  {
+    "id": "Q034",
+    "category": "var_reviewability",
+    "question": "Can VAR review a decision after play has been restarted?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["restarted", "mistaken identity"],
+    "source_law": "VAR Protocol - Principles",
+    "should_abstain": false,
+    "ground_truth_excerpt": "If play has stopped and been restarted, the referee may not undertake a review except for a case of mistaken identity or for a potential sending-off offence relating to violent conduct, spitting, biting or extremely offensive, insulting and/or abusive actions"
+  },
+  {
+    "id": "Q035",
+    "category": "var_reviewability",
+    "question": "What signal does the referee use when a VAR check is delaying the restart of play?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["signal", "check"],
+    "source_law": "VAR Protocol - Check",
+    "should_abstain": false,
+    "ground_truth_excerpt": "the referee will signal this by clearly holding a finger to the earpiece/headset and extending the other hand/arm"
+  },
+  {
+    "id": "Q036",
+    "category": "var_reviewability",
+    "question": "What type of VAR review is used for factual decisions like player position for offside?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["factual", "offside", "position"],
+    "source_law": "VAR Protocol - Review",
+    "should_abstain": false,
+    "ground_truth_excerpt": "For factual decisions e.g. position of an offence or player (offside), point of contact (handball/foul), location (inside or outside the penalty area), ball out of play etc. a VAR-only review is usually appropriate"
+  },
+  {
+    "id": "Q037",
+    "category": "var_reviewability",
+    "question": "What type of VAR review is appropriate for subjective decisions like intensity of a foul?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["subjective", "foul"],
+    "source_law": "VAR Protocol - Review",
+    "should_abstain": false,
+    "ground_truth_excerpt": "For subjective decisions, e.g. intensity of a foul challenge, interference at offside, handball considerations, an on-field review (OFR) is appropriate"
+  },
+  {
+    "id": "Q038",
+    "category": "var_reviewability",
+    "question": "What disciplinary action is taken against a player who enters the VAR video operation room?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["sent off", "video operation room"],
+    "source_law": "VAR Protocol - Players and team officials",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A player/substitute/substituted player/team official who enters the VOR will be sent off"
+  },
+  {
+    "id": "Q039",
+    "category": "var_reviewability",
+    "question": "Can VAR review an incorrectly awarded corner kick?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["corner kick", "competition"],
+    "source_law": "VAR Protocol - Reviewable decisions",
+    "should_abstain": false,
+    "ground_truth_excerpt": "Clearly incorrectly awarded corner kick if the decision can be changed immediately and without delaying the restart (competition option)"
+  },
+  {
+    "id": "Q040",
+    "category": "var_reviewability",
+    "question": "What must the referee do after completing a VAR review process?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["final decision", "communicate"],
+    "source_law": "VAR Protocol - Final decision",
+    "should_abstain": false,
+    "ground_truth_excerpt": "When the review process is completed, the referee must show the TV signal and communicate the final decision"
+  },
+  {
+    "id": "Q041",
+    "category": "var_reviewability",
+    "question": "What is a VAR silent check?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["communicate", "referee"],
+    "source_law": "VAR Protocol - Check",
+    "should_abstain": false,
+    "ground_truth_excerpt": "If the check does not indicate a clear and obvious error or serious missed incident, there is usually no need for the VAR to communicate with the referee – this is a silent check"
+  },
+  {
+    "id": "Q042",
+    "category": "penalty",
+    "question": "What happens if a penalty kick is not taken before half-time or full-time?",
+    "expected_decision_type": "penalty",
+    "must_contain_keywords": ["penalty kick", "extended"],
+    "source_law": "Law 7 - Penalty kick",
+    "should_abstain": false,
+    "ground_truth_excerpt": "If a penalty kick has to be taken or retaken, the half is extended until the penalty kick is completed"
+  },
+  {
+    "id": "Q043",
+    "category": "red_card",
+    "question": "What is the referee's authority regarding disciplinary action before the match starts?",
+    "expected_decision_type": "red_card",
+    "must_contain_keywords": ["disciplinary action", "field of play"],
+    "source_law": "Law 12 - Disciplinary action",
+    "should_abstain": false,
+    "ground_truth_excerpt": "The referee has the authority to take disciplinary action from entering the field of play for the pre-match inspection until leaving the field of play after the match ends"
+  },
+  {
+    "id": "Q044",
+    "category": "handball",
+    "question": "What happens when a goalkeeper holds the ball for more than eight seconds?",
+    "expected_decision_type": "handball",
+    "must_contain_keywords": ["eight seconds", "corner kick"],
+    "source_law": "Law 12 - Corner kick",
+    "should_abstain": false,
+    "ground_truth_excerpt": "A corner kick is awarded if a goalkeeper, inside their penalty area, controls the ball with their hand(s)/arm(s) for more than eight seconds before releasing it"
+  },
+  {
+    "id": "Q045",
+    "category": "offside",
+    "question": "What happens if a player is in an offside position and gains advantage from a ball that rebounds off the goalpost?",
+    "expected_decision_type": "offside",
+    "must_contain_keywords": ["offside position", "advantage"],
+    "source_law": "Law 11 - Offside offence",
+    "should_abstain": false,
+    "ground_truth_excerpt": "gaining an advantage by playing the ball or interfering with an opponent when it has: rebounded or been deflected off the goalpost, crossbar, match official or an opponent"
+  },
+  {
+    "id": "Q046",
+    "category": "var_reviewability",
+    "question": "Does the match become invalid if VAR technology malfunctions?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["match", "invalid", "malfunction"],
+    "source_law": "VAR Protocol - Match validity",
+    "should_abstain": false,
+    "ground_truth_excerpt": "In principle, a match is not invalidated because of: malfunction(s) of the VAR technology"
+  },
+  {
+    "id": "Q047",
+    "category": "var_reviewability",
+    "question": "What happens if no qualified replacement VAR is available during a match?",
+    "expected_decision_type": "var_reviewability",
+    "must_contain_keywords": ["qualified replacement", "VARs"],
+    "source_law": "VAR Protocol - Incapacitated VAR",
+    "should_abstain": false,
+    "ground_truth_excerpt": "If no qualified replacement can be found for the VAR or replay operator, the match must be played/continue without the use of VARs"
+  },
+  {
+    "id": "Q048",
+    "category": "abstention",
+    "question": "Was Neymar's handball in the 2026 World Cup final against Argentina deliberate?",
+    "expected_decision_type": "unknown",
+    "must_contain_keywords": [],
+    "source_law": null,
+    "should_abstain": true,
+    "ground_truth_excerpt": "Specific incident details about this match are not available in the rule documents. DecisionLens can explain the rule criteria but cannot confirm video facts."
+  },
+  {
+    "id": "Q049",
+    "category": "abstention",
+    "question": "Should Ronaldo have been given a red card in minute 78 against France?",
+    "expected_decision_type": "unknown",
+    "must_contain_keywords": [],
+    "source_law": null,
+    "should_abstain": true,
+    "ground_truth_excerpt": "Incident-specific details are not available in the rule knowledge base."
+  },
+  {
+    "id": "Q050",
+    "category": "abstention",
+    "question": "Was the penalty awarded to Brazil against Germany in the 2026 semifinal correct?",
+    "expected_decision_type": "unknown",
+    "must_contain_keywords": [],
+    "source_law": null,
+    "should_abstain": true,
+    "ground_truth_excerpt": "Specific match incident details cannot be verified from FIFA rule documents alone."
+  }
+]

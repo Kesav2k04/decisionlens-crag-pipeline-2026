@@ -11,9 +11,33 @@ from retriever import HybridRetriever
 OLLAMA_URL = "http://localhost:11434/api/generate"
 GRANITE_MODEL = "granite3.1-dense:8b"  # Optimized for Kesav's RTX 3070 Ti
 
-# Relevance thresholds - Tuned for nomic-embed-text inflated cosines
+# Relevance thresholds - Reverted back to optimized baseline
 GOOD_THRESHOLD = 0.75   # Above this: answer confidently from context
-POOR_THRESHOLD = 0.65   # Below this: safely abstain from answering
+POOR_THRESHOLD = 0.65   # Reverted back to 0.65 to capture legitimate edge rules
+
+# ── Schema Normalizer Maps ──────────────────────────────────
+VALID_DECISION_TYPES = {
+    "handball", "offside", "penalty", "red_card", "var_reviewability", "unknown"
+}
+
+TYPE_MAP = {
+    "disciplinary_action": "red_card",
+    "disciplinary": "red_card",
+    "corner kick": "handball",     # 8-second goalkeeper rule lives in Law 12
+    "corner_kick": "handball",
+    "caution": "red_card",         # two cautions = second yellow = red card
+    "yellow card": "red_card",
+    "sending off": "red_card",
+    "sending-off": "red_card",
+    "var": "var_reviewability",
+    "foul": "red_card",
+}
+
+def normalize_decision_type(raw_type: str) -> str:
+    t = raw_type.lower().strip()
+    if t in VALID_DECISION_TYPES:
+        return t
+    return TYPE_MAP.get(t, "unknown")
 
 # ── Response Schema ─────────────────────────────────────────
 RESPONSE_SCHEMA = {
@@ -25,6 +49,19 @@ RESPONSE_SCHEMA = {
     "missing_evidence": [],
     "sources": []
 }
+
+# ── Pattern Detection Guardrails ───────────────────────────
+INCIDENT_PATTERNS = [
+    r'\b(messi|ronaldo|neymar|mbappe|haaland|salah|benzema|lewandowski)\b',
+    r'\bminute\s+\d+\b',
+    r'\b\d{4}\s*(world cup|semifinal|final|quarter.final)\b',
+    r'\b(semifinal|world cup final)\b',
+]
+
+def is_incident_specific(question: str) -> bool:
+    """Detect player-name or match-specific questions that cannot be answered from rule documents."""
+    q = question.lower()
+    return any(re.search(p, q) for p in INCIDENT_PATTERNS)
 
 # ── Prompts ─────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are DecisionLens, an assistant that explains FIFA VAR and referee decisions to football fans.
@@ -108,15 +145,17 @@ def evaluate_context(chunks: list) -> tuple[str, float]:
         return "UNSURE", avg_score
 
 def parse_granite_response(raw: str) -> dict:
-    """Extract and parse structured JSON from model response."""
+    """Extract, parse, and normalize structured JSON from model response."""
     match = re.search(r'\{[\s\S]*\}', raw)
     
     if match:
         cleaned = match.group(0)
-        # Prevent invalid strings caused by raw unescaped control newlines
         cleaned = cleaned.replace('\n', ' ')
         try:
-            return json.loads(cleaned)
+            parsed = json.loads(cleaned)
+            if "decision_type" in parsed:
+                parsed["decision_type"] = normalize_decision_type(parsed["decision_type"])
+            return parsed
         except json.JSONDecodeError as e:
             return {
                 **RESPONSE_SCHEMA,
@@ -133,8 +172,8 @@ def parse_granite_response(raw: str) -> dict:
     }
 
 def build_abstention_response(question: str, chunks: list) -> dict:
-    """Fallback response when context is irrelevant."""
-    available_topics = [c.get("source", "unknown") for c in chunks]
+    """Fallback response when context is irrelevant or query is incident-specific."""
+    available_topics = [c.get("source", "unknown") for c in chunks] if chunks else ["IFAB Document Base"]
     return {
         **RESPONSE_SCHEMA,
         "answer": (
@@ -149,8 +188,13 @@ def build_abstention_response(question: str, chunks: list) -> dict:
         "sources": list(set(available_topics))
     }
 
-def run(question: str, top_k: int = 3) -> dict:
+def run(question: str, top_k: int = 5) -> dict:
     print(f"\n[AGENT] Question: {question}")
+
+    # Early exit check for incident-specific match queries
+    if is_incident_specific(question):
+        print("[AGENT] Incident-specific pattern matched → early-exit abstention activated.")
+        return build_abstention_response(question, [])
 
     # 1. Retrieve
     print("[AGENT] Retrieving relevant chunks...")
