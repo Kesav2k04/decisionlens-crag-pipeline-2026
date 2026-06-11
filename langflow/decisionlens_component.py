@@ -3,7 +3,7 @@
 # Wraps the real pipeline/agent.py run() so LangFlow orchestrates the
 # actual hybrid retriever, CRAG evaluator, and Granite generation —
 # not LangFlow's native vector/LLM components, which have no knowledge
-# of the project's 532 Docling chunks or RRF fusion logic.
+# of the project's 593 Docling chunks or RRF fusion logic.
 
 import os
 import sys
@@ -21,7 +21,13 @@ class DecisionLensCRAGAgent(CustomComponent):
         "Requires Ollama running locally with granite3.1-dense:8b and "
         "nomic-embed-text pulled."
     )
-    icon = "⚽"
+    icon = "soccer"
+    
+    # Standardize all potential telemetry/tracking hooks expected by Langflow
+    get_telemetry_input_values = lambda self: {}
+    get_output_logs = lambda self: {}
+    _token_usage = {}
+    token_usage = {}
 
     def build_config(self) -> dict:
         return {
@@ -37,10 +43,12 @@ class DecisionLensCRAGAgent(CustomComponent):
         }
 
     def build(self, question: str) -> str:
-        # Resolve pipeline/ relative to this file so the component works
-        # no matter which directory LangFlow was launched from.
-        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        pipeline_dir = os.path.join(repo_root, "pipeline")
+        # Force absolute paths to ensure imports resolve correctly from any context
+        root_dir = r"D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026"
+        pipeline_dir = r"D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026\pipeline"
+        
+        if root_dir not in sys.path:
+            sys.path.insert(0, root_dir)
         if pipeline_dir not in sys.path:
             sys.path.insert(0, pipeline_dir)
 
