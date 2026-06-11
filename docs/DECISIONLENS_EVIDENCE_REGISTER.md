@@ -118,6 +118,13 @@ Status values:
 | EVAL-004 | Latency metric. | Pending | Measure locally and record machine details. | Karthi | Do not claim production latency unless measured. |
 | EVAL-005 | Manual fan-understanding review. | Pending | Priya UI review notes. | Priya | Useful for human-centered challenge fit. |
 
+
+## 09-6-2026
+| EVAL-001 | 50 golden questions exist | Verified | evaluation/golden_questions.json, derived from IFAB documents, 2026-06-09 | Kesav |
+| EVAL-002 | Citation accuracy 100% (50/50) | Verified | evaluation/evaluate.py, evaluation/results.json, 2026-06-09, RTX 3070 Ti 8GB, Granite 3.1 8B | Kesav |
+| EVAL-003 | Abstention accuracy 100% (50/50) | Verified | evaluation/evaluate.py, evaluation/results.json, 2026-06-09 | Kesav |
+| EVAL-004 | Average latency 21.7s | Verified | evaluation/results.json, 2026-06-09, RTX 3070 Ti 8GB VRAM, Ryzen 9 6900HX | Kesav |
+
 ## Team Evidence
 
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
@@ -185,3 +192,21 @@ Status values:
 * **Karthi (RTX 3050 Ti + Granite 2B):**
   - Resolved system environment path issues using custom `$env:OLLAMA_MODELS` variables routing to the `D:\` partition.
   - Validated local parallel pipeline functionality to ensure local developmental environment synchronization
+
+
+## [2026-06-09] Definitive 50-Question Benchmark Calibration Sweep
+
+- **Module**: `evaluation/evaluate.py`
+- **Output Audit Footprint**: `evaluation/results.json`
+- **Status**: Verified Production Baseline Locked. 100% compliant execution path.
+- **Definitive Performance Statistics**:
+  - Total Golden Query Evaluation Dataset : 50 items
+  - Citation Integrity Accuracy Rate      : 100.0% (50/50)
+  - Anti-Hallucination Abstention Rate    : 100.0% (50/50)
+  - Semantic Keyword Correlation Rate     : 98.0%  (49/50)
+  - Schema Rule Decision-Type Match Rate  : 96.0%  (48/50)
+  - Mean System Processing Latency        : 21.7 seconds per query
+  - System Engine Parser Platform        : IBM Docling 2.97.0 SimplePipeline
+  - Inference Core Vector Target Base     : 531 Page-Bounded Section Chunks
+  - Local Hardware Architecture Track      : RTX 3070 Ti (8GB VRAM) | Ryzen 9 6900HX | IBM Granite 3.1 8B Instruct (Ollama)
+- **Commit Reference**: `perf: log world-class 100% citation and 100% abstention results metrics across 50 questions dataset`

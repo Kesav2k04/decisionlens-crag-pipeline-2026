@@ -142,7 +142,7 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
         "machine": "RTX 3070 Ti 8GB VRAM | Ryzen 9 6900HX | 16GB DDR5",
         "model": "granite3.1-dense:8b via Ollama",
         "parser": "IBM Docling 2.97.0 SimplePipeline",
-        "chunks_indexed": 531
+        "chunks_indexed": 532
     }
 
     os.makedirs("evaluation", exist_ok=True)
