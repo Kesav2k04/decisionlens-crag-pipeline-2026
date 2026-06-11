@@ -53,7 +53,7 @@ Status values:
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
 |---|---|---|---|---|---|
 | IBM-001 | IBM Granite 3.1 Instruct is deployed as core generation layer. | Verified | Deployed local model `granite3.1-dense:8b` via Ollama orchestration on Kesav's RTX 3070 Ti hardware. | Kesav | Complete offline text synthesis functioning. |
-| IBM-002 | IBM Docling is implemented as primary data parsing ingestion channel. | Verified | `pipeline/chunk_documents.py` executes `SimplePipeline` markdown layer mapping contracts. | Kesav | Code path verified; overrides raw pypdf pipelines. |
+| IBM-002 | IBM Docling is implemented as primary data parsing ingestion channel. | Verified (re-confirmed 2026-06-11) | `pipeline/chunk_documents.py` — `DocumentConverter` with `PdfFormatOption(pipeline_cls=SimplePipeline)`, Docling 2.97.0; audit markdown saved to `data/processed/<doc>/docling_parsed.md`. | Kesav | Code path verified 2026-06-11; all 532 chunks in `data/chunks/chunks.json` carry `"parser": "docling"`. |
 | IBM-003 | Orchestration layer handles multi-threshold routing pipelines cleanly. | Verified | `pipeline/agent.py` contains native custom threshold loops mapping context logic. | Karthi/Kesav | Isolated algorithmic control; no messy wrapper bloat. |
 
 
@@ -86,7 +86,7 @@ Status values:
 | PRD-002 | System retrieves official rule/protocol evidence before answering. | Verified | `pipeline/agent.py` console output confirming 3 chunks retrieved and evaluated prior to Granite synthesis. | Kesav | Core retrieval pipeline functional. |
 | PRD-003 | System cites source snippets. | Verified | JSON output from `agent.py` successfully populates `rule_citations` with unhallucinated `quoted_span` and `source` matches. | Kesav | Strict JSON schema enforced. |
 | PRD-004 | System abstains or lists missing evidence when facts are insufficient. | Verified | "Ronaldo 67th minute" test query correctly triggered POOR route (score: 0.635), returning confidence 0.0 and populated `missing_evidence`. | Kesav | CRAG threshold guardrails operational. |
-| PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Verified | Local test queries prove excellent baseline accuracy on handball, offside, and VAR rules. | Kesav/Karthi | Complete context coverage over 451 fragments. |
+| PRD-005 | System explains handball, offside, penalty, red card, and VAR reviewability. | Verified | Local test queries prove excellent baseline accuracy on handball, offside, and VAR rules. | Kesav/Karthi | Complete context coverage over 532 fragments (count re-verified 2026-06-11). |
 ---
 
 
@@ -102,9 +102,15 @@ Status values:
 ## (07-07-2026)
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
 |---|---|---|---|---|---|
-| DATA-001 | IFAB/FIFA laws can be used as official rule source if public and allowed. | Verified | `data/raw/Laws of the Game 2025_26_single pages.pdf` converted to clean markdown audit records. | Kesav | Generated 418 discrete contextual fragments. |
-| DATA-002 | VAR protocol source is available and parseable. | Verified | `data/raw/Video Assistant Referee (VAR) protocol _ IFAB.pdf` mapped via ingestion script. | Kesav | Generated 33 discrete contextual fragments. |
+| DATA-001 | IFAB/FIFA laws can be used as official rule source if public and allowed. | Verified | `data/raw/Laws of the Game 2025_26_single pages.pdf` converted to clean markdown audit records. | Kesav | Generated 418 discrete contextual fragments (superseded 2026-06-11: 496). |
+| DATA-002 | VAR protocol source is available and parseable. | Verified | `data/raw/Video Assistant Referee (VAR) protocol _ IFAB.pdf` mapped via ingestion script. | Kesav | Generated 33 discrete contextual fragments (superseded 2026-06-11: 36). |
 | DATA-003 | Final storage schema includes parser compliance tracking fields. | Verified | Checked `data/chunks/chunks.json`. Every node explicitly contains `"parser": "docling"`. | Kesav | 100% compliant data tracking layer asset. |
+
+## (11-06-2026)
+| ID | Claim | Status | Evidence / Source | Owner | Notes |
+|---|---|---|---|---|---|
+| DATA-001 | IFAB Laws of the Game 2025/26 ingested via IBM Docling 2.97.0 SimplePipeline. | Verified (2026-06-11) | `pipeline/chunk_documents.py` output; audit markdown at `data/processed/Laws_of_the_Game_2025_26_single_pages/docling_parsed.md`. | Kesav | Generated 496 header-split chunks (max 600 chars, overlap 100). |
+| DATA-002 | IFAB VAR Protocol ingested via IBM Docling 2.97.0 SimplePipeline. | Verified (2026-06-11) | `pipeline/chunk_documents.py` output; audit markdown at `data/processed/Video_Assistant_Referee_(VAR)_protocol___IFAB/docling_parsed.md`. | Kesav | Generated 36 header-split chunks. Total index: 532 chunks, all tagged `"parser": "docling"` in `data/chunks/chunks.json`. |
 ---
 
 
@@ -139,9 +145,9 @@ Status values:
 
 | ID | Claim | Status | Evidence / Source | Owner | Notes |
 |---|---|---|---|---|---|
-| DOC-001 | README includes problem, AI/technical approach, and why it matters in soccer/World Cup context. | Pending | Final README review. | Priya/Kesav | Mandatory. |
-| DOC-002 | Demo video is 3 minutes or less. | Pending | Final video timestamp. | Priya | Mandatory. |
-| DOC-003 | README avoids unsupported hype and fake metrics. | Pending | Codex review. | Kesav | Use documentation checklist. |
+| DOC-001 | README includes problem, AI/technical approach, and why it matters in soccer/World Cup context. | Verified (2026-06-11) | `README.md` rewritten 2026-06-11 following the 13-section judge-friendly structure in DOCUMENTATION_QUALITY_CHECKLIST.md; all metrics sourced from `evaluation/results.json`. | Priya/Kesav | Demo screenshot at `docs/screenshots/ui_main.png` still to be captured. |
+| DOC-002 | Demo video is 3 minutes or less. | Pending | Final video timestamp. Script ready at `docs/DEMO_SCRIPT.md` (written 2026-06-11, timed to 3:00). | Priya | Mandatory. Record before June 28. |
+| DOC-003 | README avoids unsupported hype and fake metrics. | Pending | Draft complete 2026-06-11; checked against banned-phrase list. Awaiting Codex review. | Kesav | Use documentation checklist. |
 | DOC-004 | Project page text reviewed before publish. | Pending | Codex review. | Kesav | Required before June 28. |
 
 ## Daily Evidence Log
@@ -188,7 +194,7 @@ Status values:
 * **Kesav (RTX 3070 Ti + Granite 8B):**
   - Successfully resolved model output constraints using a custom Regex structural compiler and Ollama options array.
   - Verified multi-threshold evaluation layers (`GOOD >= 0.75`, `POOR <= 0.65`) to achieve precise, anti-hallucination routing.
-  - Successfully mapped 451 structural database fragments containing compliant Docling tracking tags.
+  - Successfully mapped structural database fragments containing compliant Docling tracking tags (count at the time: 451; superseded by 532 after the 2026-06-11 re-ingestion — see DATA-001/DATA-002 update of 2026-06-11).
 * **Karthi (RTX 3050 Ti + Granite 2B):**
   - Resolved system environment path issues using custom `$env:OLLAMA_MODELS` variables routing to the `D:\` partition.
   - Validated local parallel pipeline functionality to ensure local developmental environment synchronization
@@ -210,3 +216,28 @@ Status values:
   - Inference Core Vector Target Base     : 531 Page-Bounded Section Chunks
   - Local Hardware Architecture Track      : RTX 3070 Ti (8GB VRAM) | Ryzen 9 6900HX | IBM Granite 3.1 8B Instruct (Ollama)
 - **Commit Reference**: `perf: log world-class 100% citation and 100% abstention results metrics across 50 questions dataset`
+
+## [2026-06-11] Evaluation Refresh and Submission Asset Sweep
+
+- **Module**: `evaluation/evaluate.py` (re-run after Docling re-ingestion); `pipeline/chunk_documents.py`
+- **Output Audit Footprint**: `evaluation/results.json`, `data/chunks/chunks.json`
+- **Refreshed Performance Statistics** (supersede the 2026-06-09 sweep):
+  - Total Golden Query Evaluation Dataset : 50 items
+  - Citation Integrity Accuracy Rate      : 100.0% (50/50)
+  - Anti-Hallucination Abstention Rate    : 100.0% (50/50)
+  - Semantic Keyword Correlation Rate     : 98.0%  (49/50)
+  - Schema Rule Decision-Type Match Rate  : 96.0%  (48/50)
+  - Mean System Processing Latency        : 9.7 seconds per query
+  - Inference Core Vector Target Base     : 532 section chunks (496 Laws of the Game + 36 VAR Protocol)
+  - System Engine Parser Platform         : IBM Docling 2.97.0 SimplePipeline
+  - Local Hardware Architecture Track     : RTX 3070 Ti (8GB VRAM) | Ryzen 9 6900HX | 16GB DDR5 | IBM Granite 3.1 8B Instruct (Ollama)
+
+### Daily Evidence Log — 2026-06-11
+
+- Verified `pipeline/chunk_documents.py` uses authentic IBM Docling 2.97.0 (`DocumentConverter` + `SimplePipeline`, OCR/table-structure off); audit markdown confirmed at `data/processed/<doc>/docling_parsed.md` for both IFAB sources.
+- Counted `data/chunks/chunks.json` directly: 532 chunks total (496 + 36), 100% tagged `"parser": "docling"`. DATA-001/DATA-002 updated above.
+- Created LangFlow Custom Component `langflow/decisionlens_component.py` ("DecisionLens CRAG Agent") wrapping the real `pipeline/agent.py run()`, plus `langflow/README.md` load instructions.
+- Rebuilt `app/main.py` Streamlit interface: full CSS theme override (parchment/pitch-green/aged-gold/ink-navy), crest header, evidence-sufficiency dial, notebook-style citation cards, wax-seal missing-evidence panel, museum accession source labels. Compile-checked.
+- Rewrote `README.md` to the 13-section judge-friendly structure; every metric sourced from `evaluation/results.json` (9.7s latency, 532 chunks). Added MIT `LICENSE`.
+- Wrote `docs/DEMO_SCRIPT.md` — 3:00 timed script with two scripted demo questions (VAR review categories → cited answer; Neymar incident question → abstention).
+- Pending: UI screenshot capture, demo video recording, LangFlow flow JSON export, Codex review of README/demo/project page.

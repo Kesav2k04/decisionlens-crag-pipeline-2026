@@ -22,3 +22,8 @@ docs/DOCUMENTATION_QUALITY_CHECKLIST.md
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+data/chunks/bm25_cache.pkl
+data/embeddings_cache.npz
+.venv-docling/
+.venv/

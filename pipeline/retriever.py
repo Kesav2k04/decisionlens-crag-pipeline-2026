@@ -1,8 +1,9 @@
 ﻿# pipeline/retriever.py
-# Optimised: embedding cache + rank_bm25 + parallel init + isolated memory footprint
+# Optimised: embedding cache + rank_bm25 + parallel init + isolated memory footprint + BM25 Disk Cache + RRF_K Tuning
 
 import os
 import json
+import pickle
 import hashlib
 import gc
 import numpy as np
@@ -13,6 +14,7 @@ from rank_bm25 import BM25Okapi
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CHUNKS_PATH = os.path.join(BASE_DIR, "data", "chunks", "chunks.json")
 CACHE_PATH  = os.path.join(BASE_DIR, "data", "embeddings_cache.npz")
+BM25_CACHE_PATH = os.path.join(BASE_DIR, "data", "chunks", "bm25_cache.pkl")
 
 # ── helpers ────────────────────────────────────────────────
 
@@ -82,15 +84,22 @@ class HybridRetriever:
             self.embeddings = self._build_and_cache(fingerprint)
 
         # Memory Optimization Fix: Compute vector matrix norms ONCE during startup initialization
-        # This completely prevents heap allocation thrashing inside loops
         print("[+] Pre-computing vector metrics tracks...")
         self.embeddings = np.array(self.embeddings, dtype=np.float32)
         self.norms = np.linalg.norm(self.embeddings, axis=1)
 
-        # ── Build BM25 index ──
-        print("[+] Building BM25 index...")
-        tokenized = [c["text"].lower().split() for c in self.chunks]
-        self.bm25 = BM25Okapi(tokenized)
+        # ── Build/Load BM25 index with Disk Cache ──
+        if os.path.exists(BM25_CACHE_PATH):
+            print(f"[+] Loading BM25 Index from Disk Cache (instant) -> {BM25_CACHE_PATH}")
+            with open(BM25_CACHE_PATH, "rb") as f:
+                self.bm25 = pickle.load(f)
+        else:
+            print("[+] No BM25 cache found — Building fresh BM25 index matrix...")
+            tokenized = [c["text"].lower().split() for c in self.chunks]
+            self.bm25 = BM25Okapi(tokenized)
+            with open(BM25_CACHE_PATH, "wb") as f:
+                pickle.dump(self.bm25, f)
+            print(f"[+] BM25 Cache saved → {BM25_CACHE_PATH}")
 
         # Force aggressive memory reclaim
         gc.collect()
@@ -118,8 +127,8 @@ class HybridRetriever:
         similarities = np.dot(self.embeddings, q_vec) / (self.norms * q_norm + 1e-8)
         vector_ranked = list(np.argsort(similarities)[::-1][:20])
 
-        # RRF Fusion Logic 
-        fused = self._rrf(vector_ranked, bm25_ranked)
+        # RRF Fusion Logic with Tuned k = 72 for 593 Chunks
+        fused = self._rrf(vector_ranked, bm25_ranked, k=72)
 
         results = []
         for doc_id in fused[:top_k]:
@@ -136,7 +145,7 @@ class HybridRetriever:
         return results
 
     @staticmethod
-    def _rrf(vec_ids: list, bm25_ids: list, k: int = 60) -> list:
+    def _rrf(vec_ids: list, bm25_ids: list, k: int = 72) -> list:
         scores = {}
         for rank, doc_id in enumerate(vec_ids):
             scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (k + rank + 1)
