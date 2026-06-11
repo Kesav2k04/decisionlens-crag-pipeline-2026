@@ -1,9 +1,10 @@
 ﻿# pipeline/retriever.py
-# Optimised: embedding cache + rank_bm25 + parallel init + top_k=5
+# Optimised: embedding cache + rank_bm25 + parallel init + isolated memory footprint
 
 import os
 import json
 import hashlib
+import gc
 import numpy as np
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -22,7 +23,6 @@ def load_chunks() -> list:
         return json.load(f)
 
 def chunks_fingerprint(chunks: list) -> str:
-    """Hash the chunks so we know if the cache is stale."""
     digest = hashlib.md5(
         json.dumps([c["chunk_id"] for c in chunks]).encode()
     ).hexdigest()
@@ -41,12 +41,7 @@ def get_embedding(text: str) -> list:
         pass
     return [0.0] * 768
 
-def embed_all_parallel(chunks: list, max_workers: int = 8) -> np.ndarray:
-    """
-    Embed all chunks in parallel using a thread pool.
-    max_workers=8 sends 8 simultaneous requests to Ollama.
-    Much faster than sequential on a local model.
-    """
+def embed_all_parallel(chunks: list, max_workers: int = 4) -> np.ndarray:
     embeddings = [None] * len(chunks)
     total = len(chunks)
     completed = 0
@@ -86,15 +81,23 @@ class HybridRetriever:
             print("[+] No cache found — building embedding index...")
             self.embeddings = self._build_and_cache(fingerprint)
 
+        # Memory Optimization Fix: Compute vector matrix norms ONCE during startup initialization
+        # This completely prevents heap allocation thrashing inside loops
+        print("[+] Pre-computing vector metrics tracks...")
+        self.embeddings = np.array(self.embeddings, dtype=np.float32)
+        self.norms = np.linalg.norm(self.embeddings, axis=1)
+
         # ── Build BM25 index ──
         print("[+] Building BM25 index...")
         tokenized = [c["text"].lower().split() for c in self.chunks]
         self.bm25 = BM25Okapi(tokenized)
 
+        # Force aggressive memory reclaim
+        gc.collect()
         print(f"[+] Retriever ready — {len(self.chunks)} chunks indexed.\n")
 
     def _build_and_cache(self, fingerprint: str) -> np.ndarray:
-        embeddings = embed_all_parallel(self.chunks, max_workers=8)
+        embeddings = embed_all_parallel(self.chunks, max_workers=4)
         os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
         np.savez_compressed(CACHE_PATH,
                             embeddings=embeddings,
@@ -103,18 +106,19 @@ class HybridRetriever:
         return embeddings
 
     def search(self, query: str, top_k: int = 5) -> list:
-        # BM25 (fast — pre-indexed inverted index)
+        # BM25 Inversion Lookup Pass
         bm25_scores = self.bm25.get_scores(query.lower().split())
         bm25_ranked = list(np.argsort(bm25_scores)[::-1][:20])
 
-        # Vector (fast — single matrix multiply)
+        # Accelerated Matrix Vector Correlation Check
         q_vec = np.array(get_embedding(query), dtype=np.float32)
-        norms = np.linalg.norm(self.embeddings, axis=1)
         q_norm = np.linalg.norm(q_vec) + 1e-8
-        similarities = np.dot(self.embeddings, q_vec) / (norms * q_norm + 1e-8)
+        
+        # Safe dot multiplication against pre-computed memory variables
+        similarities = np.dot(self.embeddings, q_vec) / (self.norms * q_norm + 1e-8)
         vector_ranked = list(np.argsort(similarities)[::-1][:20])
 
-        # RRF fusion
+        # RRF Fusion Logic 
         fused = self._rrf(vector_ranked, bm25_ranked)
 
         results = []
@@ -126,6 +130,9 @@ class HybridRetriever:
                 "bm25_score":   float(bm25_scores[doc_id]),
                 "vector_score": float(similarities[doc_id])
             })
+            
+        # Clean garbage references instantly
+        del q_vec
         return results
 
     @staticmethod
