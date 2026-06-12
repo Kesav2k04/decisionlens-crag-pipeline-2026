@@ -1,4 +1,4 @@
-# DecisionLens — 3-Minute Demo Script
+﻿# DecisionLens — 3-Minute Demo Script
 
 Total runtime: 3:00. Record screen + voiceover. The Streamlit app must already be running
 (`streamlit run app/main.py`) with Ollama serving `granite3.1-dense:8b` before recording starts.
@@ -38,14 +38,14 @@ Every claim below is traceable to the evidence register (IDs in brackets).
 **On screen:** The architecture diagram from the README, then 5 seconds of the LangFlow Playground running the DecisionLens CRAG Agent component.
 
 **Say:**
-> "Under the hood: IBM Docling parses the two official IFAB PDFs into 532 section chunks. A hybrid retriever combines BM25 keyword search and nomic-embed-text vectors through Reciprocal Rank Fusion. A corrective-RAG evaluator scores the evidence — above 0.75 it answers, below 0.65 it abstains. IBM Granite 3.1 8B, running locally through Ollama, generates the structured answer in strict JSON, using only the retrieved chunks. The same pipeline is exposed as a LangFlow custom component." [IBM-001, IBM-002, DATA-001, DATA-002]
+> "Under the hood: IBM Docling parses the two official IFAB PDFs into 593 section chunks. A hybrid retriever combines BM25 keyword search and nomic-embed-text vectors through Reciprocal Rank Fusion. A corrective-RAG evaluator scores the evidence — above 0.75 it answers, below 0.65 it abstains. IBM Granite 3.1 8B, running locally through Ollama, generates the structured answer in strict JSON, using only the retrieved chunks. The same pipeline is exposed as a LangFlow custom component." [IBM-001, IBM-002, DATA-001, DATA-002]
 
 ## 2:05–2:35 — Evaluation results
 
 **On screen:** `evaluation/results.json` summary block, or the metrics table from the README.
 
 **Say:**
-> "We test with 50 golden questions and deterministic checks. Citation accuracy: 100 percent — all 50 answers cite real rule text. Abstention accuracy: 100 percent — every incident-specific trap question was refused. Keyword accuracy 98 percent, decision-type classification 96 percent, average latency 9.7 seconds per question on an RTX 3070 Ti. All numbers are in results.json in the repo." [EVAL-001 through EVAL-004]
+> "We test with 50 golden questions and deterministic checks. Citation accuracy: 100 percent — all 50 answers cite real rule text. Abstention accuracy: 100 percent — every incident-specific trap question was refused. Keyword accuracy 100 percent, decision-type classification 100 percent, average latency 9.3 seconds per question on an RTX 3070 Ti. All numbers are in results.json in the repo." [EVAL-001 through EVAL-004]
 
 ## 2:35–3:00 — Impact and limitations
 
@@ -61,3 +61,4 @@ Every claim below is traceable to the evidence register (IDs in brackets).
 - Do not show code files or long terminal scrolls; the architecture section uses the diagram only.
 - If question 1's latency exceeds 15 seconds in the take, re-record — warm up Ollama with one query before recording.
 - Verify final video length ≤ 3:00 before upload (DOC-002).
+

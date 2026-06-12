@@ -1,4 +1,4 @@
-# DecisionLens
+﻿# DecisionLens
 
 [![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org)
 
@@ -20,13 +20,13 @@ The 2026 FIFA World Cup is the first with 48 teams, which means more matches, mo
 
 ## How the system works
 
-A question goes through five stages. First, an incident-pattern guard checks whether the question names a specific player, minute, or match — those facts are not in any rule book, so such questions are routed straight to an abstention response. Second, a hybrid retriever searches 532 chunks produced by IBM Docling from the two official IFAB documents, combining BM25 keyword scores and nomic-embed-text vector similarity through Reciprocal Rank Fusion. Third, a CRAG-style evaluator scores the retrieved evidence: average vector similarity at or above 0.75 is treated as sufficient, below 0.65 triggers abstention, and the band between produces an answer flagged as possibly incomplete. Fourth, IBM Granite 3.1 8B (running locally via Ollama with `format: "json"` and temperature 0) generates a structured answer using only the retrieved chunks. Fifth, the response — answer, decision type, rule citations with exact quoted spans, decision steps, confidence, missing evidence, and sources — is rendered in the Streamlit interface.
+A question goes through five stages. First, an incident-pattern guard checks whether the question names a specific player, minute, or match — those facts are not in any rule book, so such questions are routed straight to an abstention response. Second, a hybrid retriever searches 593 chunks produced by IBM Docling from the two official IFAB documents, combining BM25 keyword scores and nomic-embed-text vector similarity through Reciprocal Rank Fusion. Third, a CRAG-style evaluator scores the retrieved evidence: average vector similarity at or above 0.75 is treated as sufficient, below 0.65 triggers abstention, and the band between produces an answer flagged as possibly incomplete. Fourth, IBM Granite 3.1 8B (running locally via Ollama with `format: "json"` and temperature 0) generates a structured answer using only the retrieved chunks. Fifth, the response — answer, decision type, rule citations with exact quoted spans, decision steps, confidence, missing evidence, and sources — is rendered in the Streamlit interface.
 
 ## IBM tools used and exact role of each
 
 **IBM Granite 3.1 8B Instruct** (`granite3.1-dense:8b` via Ollama) generates every explanation. It is called in [pipeline/agent.py](pipeline/agent.py) (`call_granite`) with a system prompt that forbids answering outside the retrieved context and requires valid JSON output. Evidence that it works: 50/50 evaluation questions returned schema-valid JSON with real citations ([evaluation/results.json](evaluation/results.json)).
 
-**IBM Docling 2.97.0** converts the two IFAB PDFs into structured markdown for chunking. [pipeline/chunk_documents.py](pipeline/chunk_documents.py) uses `DocumentConverter` with `SimplePipeline` (OCR and table-structure off, since the IFAB PDFs are born-digital text), saves the parsed markdown to `data/processed/<doc>/docling_parsed.md` for human audit, and splits on markdown headers into 532 chunks, each tagged `"parser": "docling"` in `data/chunks/chunks.json`.
+**IBM Docling 2.97.0** converts the two IFAB PDFs into structured markdown for chunking. [pipeline/chunk_documents.py](pipeline/chunk_documents.py) uses `DocumentConverter` with `StandardPdfPipeline` and `PyPdfiumDocumentBackend` (OCR and table-structure off, since the IFAB PDFs are born-digital text), saves the parsed markdown to `data/processed/<doc>/docling_parsed.md` for human audit, and splits on markdown headers into 593 chunks, each tagged `"parser": "docling"` in `data/chunks/chunks.json`.
 
 **LangFlow** provides a visual orchestration view of the pipeline. [langflow/decisionlens_component.py](langflow/decisionlens_component.py) is a Custom Component ("DecisionLens CRAG Agent") that imports `run()` from the real `pipeline/agent.py` — not LangFlow's generic vector-store components — so the flow shown in the LangFlow Playground exercises the same retriever, evaluator, and Granite call as the Streamlit app.
 
@@ -37,7 +37,7 @@ User Question
      ↓
 [Query Processor: incident-pattern guard + decision-type terms]
      ↓
-[Hybrid Retriever: BM25 + nomic-embed-text + RRF] ← 532 chunks (IBM Docling)
+[Hybrid Retriever: BM25 + nomic-embed-text + RRF] ← 593 chunks (IBM Docling)
      ↓
 [CRAG Evaluator: GOOD ≥ 0.75 → answer | POOR < 0.65 → abstain]
      ↓
@@ -94,15 +94,15 @@ Asked "Was Neymar's handball in the 2026 World Cup final against Argentina delib
 
 ## Evaluation method and results
 
-The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 golden questions ([evaluation/golden_questions.json](evaluation/golden_questions.json)) covering handball, offside, penalty, red card, and VAR procedure, including three incident-specific questions that the system must refuse. Checks are deterministic: citation presence, expected keywords, abstention correctness, and decision-type match. Results from the run recorded in [evaluation/results.json](evaluation/results.json) (June 2026, RTX 3070 Ti 8 GB VRAM, Ryzen 9 6900HX, 16 GB DDR5, granite3.1-dense:8b, 532 indexed chunks):
+The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 golden questions ([evaluation/golden_questions.json](evaluation/golden_questions.json)) covering handball, offside, penalty, red card, and VAR procedure, including three incident-specific questions that the system must refuse. Checks are deterministic: citation presence, expected keywords, abstention correctness, and decision-type match. Results from the run recorded in [evaluation/results.json](evaluation/results.json) (June 2026, RTX 3070 Ti 8 GB VRAM, Ryzen 9 6900HX, 16 GB DDR5, granite3.1-dense:8b, 593 indexed chunks):
 
 | Metric | Result |
 |---|---|
 | Citation accuracy | 100.0% (50/50) |
 | Abstention accuracy | 100.0% (50/50) |
-| Keyword accuracy | 98.0% (49/50) |
-| Decision-type accuracy | 96.0% (48/50) |
-| Average latency | 9.7 s per question |
+| Keyword accuracy | 100.0% (50/50) |
+| Decision-type accuracy | 100.0% (50/50) |
+| Average latency | 9.3s per question |
 
 Reproduce with:
 
@@ -118,7 +118,7 @@ python evaluation/evaluate.py
 - Live VAR incident data (the referee's actual reasoning for a specific review) is not published in a usable feed, so incident-specific questions are answered by abstention, not analysis.
 - The confidence score measures evidence sufficiency — how well the retrieved text covers the question — not guaranteed correctness of the answer.
 - The knowledge base is the IFAB Laws of the Game 2025/26 and VAR Protocol; competition-specific regulations (e.g. FIFA World Cup squad or technology rules) must be verified separately.
-- Two evaluation questions still fail decision-type classification and one fails keyword matching; details are in `evaluation/results.json`.
+- All 50 evaluation questions pass all four checks in the current run; details are in `evaluation/results.json`.
 
 ## Future work
 
@@ -129,3 +129,4 @@ Planned next steps: ingest competition-specific FIFA regulations as a third sour
 - **Kesav** — product direction, ingestion and retrieval pipeline (Docling, BM25 + embedding + RRF), CRAG agent, evaluation suite, evidence register, final quality gate.
 - **Karthi** — local model infrastructure (Ollama setup, Granite deployment), agent loop testing, LangFlow integration, app integration support.
 - **Priya** — documentation review, demo script and presentation, evaluation question support, UI feedback from a non-expert fan's perspective.
+
