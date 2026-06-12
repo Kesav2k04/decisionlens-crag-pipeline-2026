@@ -7,9 +7,13 @@ import sys
 import os
 import json
 import time
+from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'pipeline'))
 from agent import run
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+CHUNKS_PATH = BASE_DIR / "data" / "chunks" / "chunks.json"
 
 def load_questions(path: str) -> list:
     with open(path, "r", encoding="utf-8-sig") as f:
@@ -53,12 +57,53 @@ def check_decision_type(result: dict, expected: str) -> bool:
         return True  # abstention questions — type doesn't matter
     return result.get("decision_type", "unknown") == expected
 
+def load_chunk_metadata() -> dict:
+    """Read current index metadata so evaluation cannot drift from ingestion."""
+    if not CHUNKS_PATH.exists():
+        return {
+            "chunks_indexed": 0,
+            "parser": "unknown",
+            "pipeline": "unknown",
+            "source_counts": {}
+        }
+
+    with open(CHUNKS_PATH, "r", encoding="utf-8") as f:
+        chunks = json.load(f)
+
+    source_counts = {}
+    parser_values = set()
+    pipeline_values = set()
+    docling_versions = set()
+    for chunk in chunks:
+        source = chunk.get("source", "unknown")
+        source_counts[source] = source_counts.get(source, 0) + 1
+        if chunk.get("parser"):
+            parser_values.add(chunk["parser"])
+        if chunk.get("pipeline"):
+            pipeline_values.add(chunk["pipeline"])
+        if chunk.get("docling_version"):
+            docling_versions.add(chunk["docling_version"])
+
+    parser_label = ", ".join(sorted(parser_values)) or "unknown"
+    version_label = ", ".join(sorted(docling_versions))
+    pipeline_label = ", ".join(sorted(pipeline_values)) or "unknown"
+    if version_label:
+        parser_label = f"IBM Docling {version_label} ({pipeline_label})"
+
+    return {
+        "chunks_indexed": len(chunks),
+        "parser": parser_label,
+        "pipeline": pipeline_label,
+        "source_counts": source_counts
+    }
+
 def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
     if not os.path.exists(questions_path):
         print(f"[-] Evaluation data missing. Please initialize {questions_path} first.")
         return
         
     questions = load_questions(questions_path)
+    chunk_metadata = load_chunk_metadata()
     total = len(questions)
 
     results_log = []
@@ -98,18 +143,32 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
         if status == "FAIL":
             print(f"       Citations:{c1} Keywords:{c2} Abstention:{c3} Type:{c4}")
             print(f"       Confidence: {result.get('confidence', 0):.2f} | "
-                  f"Type: {result.get('decision_type')}")
+                  f"Type: {result.get('decision_type')} | "
+                  f"Expected: {q['expected_decision_type']}")
+
+        failed_checks = []
+        if not c1:
+            failed_checks.append("citation")
+        if not c2:
+            failed_checks.append("keywords")
+        if not c3:
+            failed_checks.append("abstention")
+        if not c4:
+            failed_checks.append("decision_type")
 
         results_log.append({
             "id": qid,
             "question": question,
+            "expected_decision_type": q["expected_decision_type"],
+            "actual_decision_type": result.get("decision_type", "unknown"),
             "status": status,
             "latency_seconds": round(elapsed, 2),
             "confidence": result.get("confidence", 0),
             "citation_present": c1,
             "keywords_present": c2,
             "abstention_correct": c3,
-            "decision_type_correct": c4
+            "decision_type_correct": c4,
+            "failed_checks": failed_checks
         })
 
     # Summary
@@ -128,6 +187,8 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
     print(f"Abstention accuracy:    {abstention_accuracy:.1f}%  ({abstention_hits}/{total})")
     print(f"Decision type accuracy: {decision_accuracy:.1f}%  ({decision_type_hits}/{total})")
     print(f"Average latency:        {avg_latency:.1f}s per query")
+    print(f"Chunks indexed:         {chunk_metadata['chunks_indexed']}")
+    print(f"Parser:                 {chunk_metadata['parser']}")
     print(f"Machine:                RTX 3070 Ti 8GB | Ryzen 9 6900HX | granite3.1-dense:8b")
     print("=" * 70)
 
@@ -141,15 +202,21 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
         "avg_latency_seconds": round(avg_latency, 1),
         "machine": "RTX 3070 Ti 8GB VRAM | Ryzen 9 6900HX | 16GB DDR5",
         "model": "granite3.1-dense:8b via Ollama",
-        "parser": "IBM Docling 2.97.0 SimplePipeline",
-        "chunks_indexed": 532
+        "parser": chunk_metadata["parser"],
+        "pipeline": chunk_metadata["pipeline"],
+        "chunks_indexed": chunk_metadata["chunks_indexed"],
+        "source_counts": chunk_metadata["source_counts"]
     }
 
-    os.makedirs("evaluation", exist_ok=True)
-    with open("evaluation/results.json", "w") as f:
-        json.dump({"summary": summary, "per_question": results_log}, f, indent=2)
+    output_path = BASE_DIR / "evaluation" / "results.json"
+    try:
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump({"summary": summary, "per_question": results_log}, f, indent=2)
+        print(f"\nFull results saved -> {output_path}")
+    except PermissionError as exc:
+        print(f"\n[WARN] Evaluation completed, but results could not be saved: {exc}")
+        print("[WARN] Re-run from a writable shell to refresh evaluation/results.json.")
 
-    print(f"\nFull results saved → evaluation/results.json")
     print("These numbers go directly into the README metrics section.")
     return summary
 
