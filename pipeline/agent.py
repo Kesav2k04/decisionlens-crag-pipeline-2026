@@ -3,9 +3,22 @@
 # Connects retriever → evaluator → Granite generation
 
 import json
+import os
+import sys
+import time
 import requests
 import re
+
+# Make imports work both as a package (pipeline.agent) and as a flat module
+# (Streamlit appends pipeline/ to sys.path), and expose repo root for context_forge.
+_PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(_PIPELINE_DIR)
+for _p in (_PIPELINE_DIR, _REPO_ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from retriever import HybridRetriever
+from context_forge.match_context import MatchContextProvider
 
 # ── Configuration ──────────────────────────────────────────
 OLLAMA_URL = "http://localhost:11434/api/generate"
@@ -120,7 +133,8 @@ RESPONSE_SCHEMA = {
     "decision_steps": [],
     "confidence": 0.0,
     "missing_evidence": [],
-    "sources": []
+    "sources": [],
+    "tactical_context": ""
 }
 
 # ── Pattern Detection Guardrails ───────────────────────────
@@ -147,7 +161,28 @@ STRICT RULES:
 5. Keep the answer field in plain language a non-expert fan can understand.
 6. confidence is evidence sufficiency (0.0 to 1.0), not factual certainty.
 7. 'decision_steps' MUST be a flat list of strings. Do not nest objects inside it.
-8. Choose decision_type from the user's governing topic: handball, offside, penalty, red_card for disciplinary/send-off questions, var_reviewability for VAR process/review questions, or unknown."""
+8. Choose decision_type from the user's governing topic: handball, offside, penalty, red_card for disciplinary/send-off questions, var_reviewability for VAR process/review questions, or unknown.
+9. If decision_type is red_card or penalty, populate tactical_context with a brief one-sentence match-impact note (e.g. numerical disadvantage, restart type). For all other types, set tactical_context to empty string. This is interpretation only. Do not cite IFAB text in this field."""
+
+# Audience-mode addenda appended to the system prompt. Default "fan" matches the
+# tone the frozen evaluation run was scored with.
+MODE_PROMPTS = {
+    "fan": (
+        "Explain as if to a passionate football fan who knows the game but not "
+        "the rulebook. Use plain language, real-match analogies, and avoid "
+        "legal sub-clauses."
+    ),
+    "analyst": (
+        "Explain with precise legal sub-clause references. Use exact Law "
+        "numbers, article references, and technical terminology. Assume "
+        "professional refereeing knowledge."
+    ),
+}
+
+def build_system_prompt(mode: str = "fan", language: str = "English") -> str:
+    parts = [SYSTEM_PROMPT, MODE_PROMPTS.get(mode, MODE_PROMPTS["fan"])]
+    parts.append(f"Respond entirely in {language}.")
+    return "\n".join(parts)
 
 def build_generation_prompt(question: str, chunks: list, confidence: float) -> str:
     context_text = ""
@@ -180,17 +215,18 @@ Respond in this exact JSON format:
   ],
   "confidence": {confidence:.2f},
   "missing_evidence": ["list any facts needed but not in context"],
-  "sources": {json.dumps(list(set(sources)))}
+  "sources": {json.dumps(list(set(sources)))},
+  "tactical_context": "One sentence on match impact if a red card or penalty; empty string otherwise."
 }}
 
 Important: quoted_span must be a short phrase actually present in the context above."""
 
-def call_granite(prompt: str) -> str:
+def call_granite(prompt: str, system_prompt: str = SYSTEM_PROMPT) -> str:
     """Send prompt to local Granite via Ollama with strict JSON enforcement."""
     payload = {
         "model": GRANITE_MODEL,
         "prompt": prompt,
-        "system": SYSTEM_PROMPT,
+        "system": system_prompt,
         "stream": False,
         "format": "json",     # Forces Ollama backend to ONLY generate valid JSON tokens
         "options": {
@@ -262,32 +298,75 @@ def build_abstention_response(question: str, chunks: list) -> dict:
         "sources": list(set(available_topics))
     }
 
-def run(question: str, top_k: int = 5) -> dict:
+def finalize_result(result: dict, language: str) -> dict:
+    """Guarantee the additive output fields without touching CRAG fields."""
+    tactical = result.get("tactical_context", "")
+    if not isinstance(tactical, str):
+        tactical = ""
+    if result.get("decision_type") not in ("red_card", "penalty"):
+        tactical = ""
+    result["tactical_context"] = tactical
+    result["language"] = language
+    return result
+
+def run(question: str, top_k: int = 5, mode: str = "fan",
+        language: str = "English", use_match_context: bool = False) -> dict:
     print(f"\n[AGENT] Question: {question}")
+    t_start = time.perf_counter()
 
     # Early exit check for incident-specific match queries
     if is_incident_specific(question):
         print("[AGENT] Incident-specific pattern matched -> early-exit abstention activated.")
-        return build_abstention_response(question, [])
+        return finalize_result(build_abstention_response(question, []), language)
 
-    # 1. Retrieve
+    # 1. Retrieve (always on the raw question; match context never enters retrieval)
     print("[AGENT] Retrieving relevant chunks...")
     chunks = retriever.search(question, top_k=top_k)
+    t_retrieved = time.perf_counter()
     print(f"[AGENT] Retrieved {len(chunks)} chunks")
 
     # 2. Evaluate
     decision, confidence = evaluate_context(chunks)
     print(f"[AGENT] Context evaluation: {decision} (confidence: {confidence:.3f})")
 
+    retrieval_debug = {
+        "crag_decision": decision,
+        "crag_score": round(confidence, 3),
+        "top_chunks": [
+            {
+                "chunk_id": c.get("chunk_id"),
+                "bm25_score": round(c.get("bm25_score", 0.0), 3),
+                "vector_score": round(c.get("vector_score", 0.0), 3),
+            }
+            for c in chunks[:3]
+        ],
+        # Additive telemetry for the UI audit trail; never read by evaluation.
+        "timings_ms": {
+            "retrieval": round((t_retrieved - t_start) * 1000),
+        },
+    }
+
     # 3. Route
     if decision == "POOR":
         print("[AGENT] Insufficient context -> abstaining")
-        return build_abstention_response(question, chunks)
+        retrieval_debug["timings_ms"]["total"] = round((time.perf_counter() - t_start) * 1000)
+        abstention = build_abstention_response(question, chunks)
+        abstention["retrieval_debug"] = retrieval_debug
+        return finalize_result(abstention, language)
 
     # 4. Generate
-    prompt = build_generation_prompt(question, chunks, confidence)
-    print(f"[AGENT] Generating with {GRANITE_MODEL}...")
-    raw_response = call_granite(prompt)
+    # Context Forge match metadata is prepended to the generation question only.
+    # It is never used as rule evidence and never alters retrieval.
+    gen_question = question
+    if use_match_context:
+        gen_question = MatchContextProvider().format_for_prompt() + "\n\n" + question
+
+    prompt = build_generation_prompt(gen_question, chunks, confidence)
+    print(f"[AGENT] Generating with {GRANITE_MODEL} (mode={mode}, language={language})...")
+    t_gen_start = time.perf_counter()
+    raw_response = call_granite(prompt, build_system_prompt(mode, language))
+    retrieval_debug["timings_ms"]["generation"] = round((time.perf_counter() - t_gen_start) * 1000)
+    retrieval_debug["timings_ms"]["total"] = round((time.perf_counter() - t_start) * 1000)
 
     # 5. Parse & Refine
     result = parse_granite_response(raw_response)
@@ -300,6 +379,9 @@ def run(question: str, top_k: int = 5) -> dict:
         result["missing_evidence"] = result.get("missing_evidence", []) + [
             "Context was partially relevant - answer may be incomplete"
         ]
+
+    result["retrieval_debug"] = retrieval_debug
+    result = finalize_result(result, language)
 
     print(f"[AGENT] Done. Confidence: {result.get('confidence', 0):.2f}")
     return result

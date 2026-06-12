@@ -28,6 +28,10 @@ A question goes through five stages. First, an incident-pattern guard checks whe
 
 **IBM Docling 2.97.0** converts the two IFAB PDFs into structured markdown for chunking. [pipeline/chunk_documents.py](pipeline/chunk_documents.py) uses `DocumentConverter` with `StandardPdfPipeline` and `PyPdfiumDocumentBackend` (OCR and table-structure off, since the IFAB PDFs are born-digital text), saves the parsed markdown to `data/processed/<doc>/docling_parsed.md` for human audit, and splits on markdown headers into 593 chunks, each tagged `"parser": "docling"` in `data/chunks/chunks.json`.
 
+The IFAB Laws of the Game PDF contains structured decision tables, such as the Law 14 penalty-kick outcome matrix (goal/no goal crossed with attacker, defender, and goalkeeper encroachment, each cell giving the restart). Docling's `DocumentConverter` keeps detected tables row/column-ordered in the markdown export rather than collapsing them into unstructured text, so these decision matrices stay intact in the vector index. Evidence: inspect `data/processed/Laws_of_the_Game_2025_26_single_pages/docling_parsed.md` for the pipe-delimited penalty-kick outcome table (around line 2213).
+
+**Context Forge (MCP stub)** supplies match metadata through a Model Context Protocol provider pattern. [context_forge/match_context.py](context_forge/match_context.py) is a minimal stub with mock data (match, minute, score, card counts); when enabled, [pipeline/agent.py](pipeline/agent.py) prepends it to the generation prompt as situational context only. It is never injected as rule evidence and never alters retrieval. Production path: replace the mock with a live football-data.org feed.
+
 **LangFlow** provides a visual orchestration view of the pipeline. [langflow/decisionlens_component.py](langflow/decisionlens_component.py) is a Custom Component ("DecisionLens CRAG Agent") that imports `run()` from the real `pipeline/agent.py` — not LangFlow's generic vector-store components — so the flow shown in the LangFlow Playground exercises the same retriever, evaluator, and Granite call as the Streamlit app.
 
 ## Architecture diagram
@@ -37,6 +41,8 @@ User Question
      ↓
 [Query Processor: incident-pattern guard + decision-type terms]
      ↓
+[Context Forge MCP: mock match metadata] ─┐
+     ↓                                     ↓ (generation prompt only, never rule evidence)
 [Hybrid Retriever: BM25 + nomic-embed-text + RRF] ← 593 chunks (IBM Docling)
      ↓
 [CRAG Evaluator: GOOD ≥ 0.75 → answer | POOR < 0.65 → abstain]
@@ -102,7 +108,7 @@ The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 
 | Abstention accuracy | 100.0% (50/50) |
 | Keyword accuracy | 100.0% (50/50) |
 | Decision-type accuracy | 100.0% (50/50) |
-| Average latency | 9.3s per question |
+| Average latency | 9.4s per question |
 
 Reproduce with:
 
@@ -122,7 +128,7 @@ python evaluation/evaluate.py
 
 ## Future work
 
-Planned next steps: ingest competition-specific FIFA regulations as a third source; add match metadata (fixtures, teams) from football-data.org for context, clearly separated from rule evidence; a retrieval debug view exposing BM25 and vector scores per chunk; and a RAGAS run to complement the deterministic checks. A Context Forge MCP integration remains a stretch goal.
+Planned next steps: ingest competition-specific FIFA regulations as a third source; add match metadata (fixtures, teams) from football-data.org for context, clearly separated from rule evidence; a retrieval debug view exposing BM25 and vector scores per chunk; and a RAGAS run to complement the deterministic checks. The Context Forge MCP stub currently serves mock match metadata; wiring it to a live football-data.org feed is the next step.
 
 ## Team and roles
 
