@@ -1,4 +1,4 @@
-﻿# DecisionLens
+# DecisionLens
 
 [![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org)
 
@@ -132,7 +132,6 @@ Planned next steps: ingest competition-specific FIFA regulations as a third sour
 
 ## Team and roles
 
-- **Kesav** — product direction, ingestion and retrieval pipeline (Docling, BM25 + embedding + RRF), CRAG agent, evaluation suite, evidence register, final quality gate.
+- **Kesav** — project lead, product direction, ingestion and retrieval pipeline (Docling, BM25 + embedding + RRF), CRAG agent, evaluation suite, evidence register, documentation, demo script, presentation, and final quality gate.
 - **Karthi** — local model infrastructure (Ollama setup, Granite deployment), agent loop testing, LangFlow integration, app integration support.
-- **Priya** — documentation review, demo script and presentation, evaluation question support, UI feedback from a non-expert fan's perspective.
 
