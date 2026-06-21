@@ -108,7 +108,7 @@ The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 
 | Abstention accuracy | 100.0% (50/50) |
 | Keyword accuracy | 100.0% (50/50) |
 | Decision-type accuracy | 100.0% (50/50) |
-| Average latency | 9.4s per question |
+| Average latency | 11.1s per question |
 
 Reproduce with:
 
