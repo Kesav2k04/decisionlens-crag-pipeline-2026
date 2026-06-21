@@ -1,4 +1,4 @@
-﻿# Python environment artifacts
+# Python environment artifacts
 __pycache__/
 *.pyc
 *.pyo
@@ -13,6 +13,8 @@ ENV/
 
 # Local-only design documentation (Keep on local D: drive only)
 docs/CLAUDE.md
+docs/DECISIONLENS_EVIDENCE_REGISTER.md
+docs/DEMO_SCRIPT.md
 docs/CLAUDE_PROJECT_WEB_INSTRUCTIONS.md
 docs/DECISIONLENS_MASTER_PLAN_AUDITED.md
 docs/DECISIONLENS_MASTER_PLAN_CLAUDE_OLD.md
