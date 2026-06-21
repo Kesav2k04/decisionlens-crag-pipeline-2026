@@ -29,3 +29,6 @@ data/chunks/bm25_cache.pkl
 data/embeddings_cache.npz
 .venv-docling/
 .venv/
+
+# Strategy Dossier
+strategy_dossier/
