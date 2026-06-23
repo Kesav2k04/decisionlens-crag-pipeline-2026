@@ -5,10 +5,68 @@
 # not LangFlow's native vector/LLM components, which have no knowledge
 # of the project's 593 Docling chunks or RRF fusion logic.
 
+import importlib.util
 import os
 import sys
+from pathlib import Path
 
 from langflow.custom import CustomComponent
+
+# Last-resort fallback when LangFlow UI paste runs outside the repo cwd
+_DEFAULT_REPO = Path(r"D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026")
+
+
+def _resolve_repo_root() -> Path:
+    """Find DecisionLens repo root when loaded from file or LangFlow UI paste."""
+    candidates: list[Path] = []
+
+    env_root = os.environ.get("DECISIONLENS_ROOT")
+    if env_root:
+        candidates.append(Path(env_root).resolve())
+
+    try:
+        candidates.append(Path(__file__).resolve().parent.parent)
+    except NameError:
+        pass
+
+    candidates.append(Path.cwd().resolve())
+    candidates.extend(Path.cwd().resolve().parents[:5])
+    candidates.append(_DEFAULT_REPO.resolve())
+
+    seen: set[Path] = set()
+    for root in candidates:
+        if root in seen:
+            continue
+        seen.add(root)
+        if (root / "pipeline" / "agent.py").is_file():
+            return root
+
+    raise RuntimeError(
+        "DecisionLens repo not found. Set DECISIONLENS_ROOT to your repo folder "
+        "(the one that contains pipeline/agent.py), then restart LangFlow."
+    )
+
+
+def _import_run():
+    root = _resolve_repo_root()
+    root_s = str(root)
+    pipeline_s = str(root / "pipeline")
+    for p in (root_s, pipeline_s):
+        if p not in sys.path:
+            sys.path.insert(0, p)
+
+    try:
+        from pipeline.agent import run
+
+        return run
+    except ModuleNotFoundError:
+        agent_py = root / "pipeline" / "agent.py"
+        spec = importlib.util.spec_from_file_location("decisionlens_agent", agent_py)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"Could not load {agent_py}") from None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.run
 
 
 class DecisionLensCRAGAgent(CustomComponent):
@@ -43,17 +101,7 @@ class DecisionLensCRAGAgent(CustomComponent):
         }
 
     def build(self, question: str) -> str:
-        # Force absolute paths to ensure imports resolve correctly from any context
-        root_dir = r"D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026"
-        pipeline_dir = r"D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026\pipeline"
-        
-        if root_dir not in sys.path:
-            sys.path.insert(0, root_dir)
-        if pipeline_dir not in sys.path:
-            sys.path.insert(0, pipeline_dir)
-
-        from agent import run
-
+        run = _import_run()
         result = run(question)
         return self._format_markdown(result)
 

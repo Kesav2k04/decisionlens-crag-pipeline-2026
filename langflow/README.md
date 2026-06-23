@@ -1,3 +1,75 @@
-# DecisionLens LangFlow Component
+# DecisionLens in LangFlow
 
-This folder contains a LangFlow Custom Component that wraps the real DecisionLens pipeline — hybrid BM25 + nomic-embed-text retrieval with RRF, the CRAG evidence evaluator, and IBM Granite 3.1 8B via Ollama — by importing `run()` directly from `pipeline/agent.py`. To load it, start Ollama (`ollama serve`), then launch LangFlow with `python -m langflow run --components-path langflow/ --port 7860` and search for "DecisionLens CRAG Agent" in the component sidebar. In the Playground, connect a Text Input to the component's `question` field and ask: "What are the four categories of decisions that VAR can review?". Valid output is a markdown block containing an Explanation section, an evidence confidence score, numbered decision steps, rule citations quoting exact spans from the IFAB Laws of the Game 2025/26 or the VAR Protocol, and a Sources list — for incident-specific questions (e.g. naming a player and minute) the component instead abstains with confidence 0.0 and a Missing evidence section.
+## What this is for
+
+LangFlow is IBM's visual builder for AI workflows. In DecisionLens it serves one purpose: **show judges and reviewers the CRAG pipeline as a flow**, without rebuilding the engine inside LangFlow's generic nodes.
+
+The custom component **DecisionLens CRAG Agent** does not reimplement retrieval or generation. It calls the same function the web app uses:
+
+```text
+pipeline/agent.py  →  run(question, mode, language)
+```
+
+That means one engine, three surfaces:
+
+| Surface | Role |
+|---|---|
+| **React web app** (`web/`) | Primary demo UI for fans and judges |
+| **FastAPI** (`api/main.py`) | HTTP wrapper for the React app |
+| **LangFlow Playground** | Visual flow demo of the same `run()` call |
+| **Streamlit** (`app/main.py`) | Fallback prototype UI |
+
+If LangFlow and the web app both answer the same question, they should return the same citations and abstention behaviour, because they share `run()`.
+
+## What LangFlow is not
+
+- Not a second RAG stack (no LangFlow-native vector store replacing our 593 Docling chunks).
+- Not required to run the product. The hackathon demo works fully with React + FastAPI + Ollama alone.
+- Not connected to live match video or incident feeds.
+
+## Prerequisites
+
+1. Ollama running: `ollama serve`
+2. Models pulled: `granite3.1-dense:8b`, `nomic-embed-text`
+3. Chunks indexed: `data/chunks/chunks.json` (593 chunks from Docling ingestion)
+4. LangFlow installed in your Python environment
+
+## Run
+
+```powershell
+cd "D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026"
+python -m langflow run --components-path langflow/ --port 7860
+```
+
+If LangFlow was started from another folder, set the repo path first:
+
+```powershell
+$env:DECISIONLENS_ROOT = "D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026"
+python -m langflow run --components-path langflow/ --port 7860
+```
+
+If you pasted the component in **New Custom Component** (Saved), open **<> Code**, replace all code with the latest [decisionlens_component.py](decisionlens_component.py), and save.
+
+Open `http://localhost:7860`. In the component sidebar, search for **DecisionLens CRAG Agent**. Drag it onto the canvas, connect a **Text Input** (or Chat Input) to the `question` field, and open the **Playground**.
+
+## Sample questions
+
+**Should answer with citations (GOOD route):**
+
+`What are the four categories of decisions that VAR can review?`
+
+Expected: four VAR review categories, IFAB VAR Protocol citation, confidence around 0.95.
+
+**Should abstain (incident guard):**
+
+`Was Neymar's handball in the 2026 World Cup final deliberate?`
+
+Expected: confidence 0.0, missing evidence listed, no invented answer.
+
+## Output format
+
+Valid output is markdown with: explanation, evidence confidence, decision steps, rule citations (quoted spans), and sources. On abstention, a missing-evidence section instead of a fabricated verdict.
+
+## Code entry point
+
+[decisionlens_component.py](decisionlens_component.py) — LangFlow `CustomComponent` that imports `run` from `pipeline/agent.py`.

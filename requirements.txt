@@ -1,5 +1,20 @@
+# DecisionLens — core pipeline + Streamlit prototype
+# Ingestion (pipeline/chunk_documents.py) requires IBM Docling.
+docling==2.97.0
+
+# Retrieval (pipeline/retriever.py) and agent (pipeline/agent.py)
 rank-bm25==0.2.2
 numpy>=1.24.0
 requests>=2.31.0
-sentence-transformers>=2.7.0
+
+# Streamlit prototype (app/main.py)
 streamlit>=1.35.0
+pillow>=10.0.0
+
+# FastAPI service (api/main.py) — exposes the engine to the React frontend
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+
+# Note: IBM Granite (granite3.1-dense:8b) and nomic-embed-text run via Ollama
+# (https://ollama.com), not pip. The LangFlow custom component additionally
+# requires `langflow` installed in its own environment (see langflow/README.md).

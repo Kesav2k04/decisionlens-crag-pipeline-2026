@@ -8,6 +8,7 @@
 
 import datetime
 import html
+import json
 import math
 import os
 import sys
@@ -16,6 +17,24 @@ import streamlit as st
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'pipeline')))
 from agent import run
+
+
+def _load_metrics() -> dict:
+    """Read headline metrics from the canonical evaluation/results.json so the
+    masthead never carries a hand-typed number. Falls back to last-known values
+    if the file is missing."""
+    try:
+        _p = os.path.join(os.path.dirname(__file__), "..", "evaluation", "results.json")
+        with open(_p, encoding="utf-8") as _f:
+            _s = json.load(_f)["summary"]
+        return {"chunks": int(_s.get("chunks_indexed", 593)),
+                "citation_pct": float(_s.get("citation_accuracy_pct", 100.0)),
+                "questions": int(_s.get("total_questions", 50))}
+    except Exception:
+        return {"chunks": 593, "citation_pct": 100.0, "questions": 50}
+
+
+METRICS = _load_metrics()
 
 # ══════════════════════════ DESIGN TOKENS ══════════════════════════
 PAPER  = "#F4F0E5"   # parchment field
@@ -739,10 +758,10 @@ st.markdown(flat(f"""
 <div class="cx-sub-it">A transparent companion to the Laws of the Game</div>
 <div class="cx-sub-mono">VAR Decision Transparency Engine · FIFA World Cup MMXXVI</div>
 <div class="cx-plaque">
-  <div class="cx-stat"><div class="cx-stat-v"><em>593</em></div><div class="cx-stat-k">folios · Docling-parsed IFAB text</div></div>
+  <div class="cx-stat"><div class="cx-stat-v"><em>{METRICS['chunks']}</em></div><div class="cx-stat-k">folios · Docling-parsed IFAB text</div></div>
   <div class="cx-stat"><div class="cx-stat-v">Granite <em>3.1</em></div><div class="cx-stat-k">IBM · 8B · on this machine</div></div>
-  <div class="cx-stat"><div class="cx-stat-v"><em>100%</em></div><div class="cx-stat-k">citation fidelity · 50-question suite</div></div>
-  <div class="cx-stat"><div class="cx-stat-v"><em>5</em> tongues</div><div class="cx-stat-k">fan &amp; analyst registers</div></div>
+  <div class="cx-stat"><div class="cx-stat-v"><em>{METRICS['citation_pct']:.0f}%</em></div><div class="cx-stat-k">citation fidelity · {METRICS['questions']}-question suite</div></div>
+  <div class="cx-stat"><div class="cx-stat-v"><em>{len(LANG_OPTIONS)}</em> tongues</div><div class="cx-stat-k">fan &amp; analyst registers</div></div>
 </div>
 """), unsafe_allow_html=True)
 
@@ -1032,7 +1051,7 @@ STATIONS = [
      "Match metadata may accompany the prompt for colour — it never enters retrieval and is never "
      "treated as rule evidence.", "IBM ContextForge", t2, ""),
     ("III", "Hybrid Retriever", "the twin indices",
-     "Two readers search 593 Docling-parsed folios at once — BM25 for the letter of the text, "
+     f"Two readers search {METRICS['chunks']} Docling-parsed folios at once — BM25 for the letter of the text, "
      "nomic-embed for its meaning — fused by Reciprocal Rank.", "IBM Docling 2.97", t3,
      "eng-skip" if gate_tripped else ""),
     ("IV", "CRAG Evaluator", "the tribunal",

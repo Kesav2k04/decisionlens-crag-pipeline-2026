@@ -7,6 +7,7 @@ import sys
 import os
 import json
 import time
+import datetime
 from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'pipeline'))
@@ -114,6 +115,7 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
     abstention_hits = 0
     decision_type_hits = 0
     latencies = []
+    gen_latencies = []   # latency of questions that actually reach Granite generation
 
     print(f"\nRunning evaluation on {total} questions...\n")
     print("=" * 70)
@@ -126,6 +128,8 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
         result = run(question)
         elapsed = time.time() - start
         latencies.append(elapsed)
+        if not q["should_abstain"]:
+            gen_latencies.append(elapsed)
 
         # Run checks
         c1 = check_citation_present(result) if not q["should_abstain"] else True
@@ -173,6 +177,7 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
 
     # Summary
     avg_latency = sum(latencies) / len(latencies) if latencies else 0.0
+    avg_latency_generative = sum(gen_latencies) / len(gen_latencies) if gen_latencies else 0.0
     citation_accuracy = (citation_hits / total * 100) if total else 0.0
     abstention_accuracy = (abstention_hits / total * 100) if total else 0.0
     keyword_accuracy = (keyword_hits / total * 100) if total else 0.0
@@ -186,7 +191,8 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
     print(f"Keyword accuracy:       {keyword_accuracy:.1f}%  ({keyword_hits}/{total})")
     print(f"Abstention accuracy:    {abstention_accuracy:.1f}%  ({abstention_hits}/{total})")
     print(f"Decision type accuracy: {decision_accuracy:.1f}%  ({decision_type_hits}/{total})")
-    print(f"Average latency:        {avg_latency:.1f}s per query")
+    print(f"Average latency:        {avg_latency:.1f}s per query (all {total})")
+    print(f"  generative-only:      {avg_latency_generative:.1f}s per query ({len(gen_latencies)} reach Granite)")
     print(f"Chunks indexed:         {chunk_metadata['chunks_indexed']}")
     print(f"Parser:                 {chunk_metadata['parser']}")
     print(f"Machine:                RTX 3070 Ti 8GB | Ryzen 9 6900HX | granite3.1-dense:8b")
@@ -200,6 +206,9 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
         "abstention_accuracy_pct": round(abstention_accuracy, 1),
         "decision_type_accuracy_pct": round(decision_accuracy, 1),
         "avg_latency_seconds": round(avg_latency, 1),
+        "avg_latency_generative_seconds": round(avg_latency_generative, 1),
+        "generative_questions": len(gen_latencies),
+        "run_date_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
         "machine": "RTX 3070 Ti 8GB VRAM | Ryzen 9 6900HX | 16GB DDR5",
         "model": "granite3.1-dense:8b via Ollama",
         "parser": chunk_metadata["parser"],
