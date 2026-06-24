@@ -36,16 +36,18 @@ If LangFlow and the web app both answer the same question, they should return th
 
 ## Run
 
+From your clone of the repository (the folder that contains `pipeline/agent.py`):
+
 ```powershell
-cd "D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026"
+cd path\to\decisionlens-june-2026
 python -m langflow run --components-path langflow/ --port 7860
 ```
 
-If LangFlow was started from another folder, set the repo path first:
+If LangFlow must be started from another working directory, point at the repo explicitly:
 
 ```powershell
-$env:DECISIONLENS_ROOT = "D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026"
-python -m langflow run --components-path langflow/ --port 7860
+$env:DECISIONLENS_ROOT = "C:\path\to\decisionlens-june-2026"
+python -m langflow run --components-path path\to\decisionlens-june-2026\langflow\ --port 7860
 ```
 
 If you pasted the component in **New Custom Component** (Saved), open **<> Code**, replace all code with the latest [decisionlens_component.py](decisionlens_component.py), and save.

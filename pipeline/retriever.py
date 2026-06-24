@@ -16,6 +16,9 @@ CHUNKS_PATH = os.path.join(BASE_DIR, "data", "chunks", "chunks.json")
 CACHE_PATH  = os.path.join(BASE_DIR, "data", "embeddings_cache.npz")
 BM25_CACHE_PATH = os.path.join(BASE_DIR, "data", "chunks", "bm25_cache.pkl")
 
+_ollama_host = os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
+OLLAMA_EMBED_URL = os.environ.get("OLLAMA_EMBED_URL", f"http://{_ollama_host}/api/embeddings")
+
 # ── helpers ────────────────────────────────────────────────
 
 def load_chunks() -> list:
@@ -45,7 +48,7 @@ def legacy_chunks_fingerprint(chunks: list) -> str:
 def get_embedding(text: str) -> list:
     try:
         r = requests.post(
-            "http://localhost:11434/api/embeddings",
+            OLLAMA_EMBED_URL,
             json={"model": "nomic-embed-text", "prompt": text},
             timeout=15
         )

@@ -21,8 +21,9 @@ from retriever import HybridRetriever
 from context_forge.match_context import MatchContextProvider
 
 # ── Configuration ──────────────────────────────────────────
-OLLAMA_URL = "http://localhost:11434/api/generate"
-GRANITE_MODEL = "granite3.1-dense:8b"  # Optimized for Kesav's RTX 3070 Ti
+_ollama_host = os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
+OLLAMA_URL = os.environ.get("OLLAMA_URL", f"http://{_ollama_host}/api/generate")
+GRANITE_MODEL = "granite3.1-dense:8b"  # IBM Granite 3.1 dense 8B via Ollama (local; ≥8 GB VRAM)
 
 # Relevance thresholds - Reverted back to optimized baseline
 GOOD_THRESHOLD = 0.75   # Above this: answer confidently from context

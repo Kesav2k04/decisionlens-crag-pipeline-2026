@@ -12,38 +12,57 @@ from pathlib import Path
 
 from langflow.custom import CustomComponent
 
-# Last-resort fallback when LangFlow UI paste runs outside the repo cwd
-_DEFAULT_REPO = Path(r"D:\IBM SKILLS BUILD 2026 BEMYAPP\decisionlens-wc2026")
+def _has_agent(root: Path) -> bool:
+    """True if root looks like the DecisionLens repo (contains pipeline/agent.py)."""
+    try:
+        return (root / "pipeline" / "agent.py").is_file()
+    except OSError:
+        return False
+
+
+def _walk_parents(start: Path, *, limit: int = 8) -> list[Path]:
+    out: list[Path] = []
+    cur = start.resolve()
+    for _ in range(limit):
+        out.append(cur)
+        parent = cur.parent
+        if parent == cur:
+            break
+        cur = parent
+    return out
 
 
 def _resolve_repo_root() -> Path:
     """Find DecisionLens repo root when loaded from file or LangFlow UI paste."""
     candidates: list[Path] = []
 
-    env_root = os.environ.get("DECISIONLENS_ROOT")
+    env_root = os.environ.get("DECISIONLENS_ROOT", "").strip()
     if env_root:
-        candidates.append(Path(env_root).resolve())
+        candidates.append(Path(env_root))
 
     try:
-        candidates.append(Path(__file__).resolve().parent.parent)
+        candidates.extend(_walk_parents(Path(__file__).resolve().parent))
     except NameError:
         pass
 
-    candidates.append(Path.cwd().resolve())
-    candidates.extend(Path.cwd().resolve().parents[:5])
-    candidates.append(_DEFAULT_REPO.resolve())
+    candidates.extend(_walk_parents(Path.cwd()))
 
     seen: set[Path] = set()
     for root in candidates:
-        if root in seen:
+        try:
+            resolved = root.resolve()
+        except OSError:
             continue
-        seen.add(root)
-        if (root / "pipeline" / "agent.py").is_file():
-            return root
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if _has_agent(resolved):
+            return resolved
 
     raise RuntimeError(
-        "DecisionLens repo not found. Set DECISIONLENS_ROOT to your repo folder "
-        "(the one that contains pipeline/agent.py), then restart LangFlow."
+        "DecisionLens repo not found. Start LangFlow from the repo root, or set "
+        "DECISIONLENS_ROOT to the folder that contains pipeline/agent.py, then "
+        "restart LangFlow."
     )
 
 

@@ -9,7 +9,7 @@
     "avg_latency_generative_seconds": 10.4,
     "generative_questions": 47,
     "run_date_utc": "2026-06-21T16:16:29+00:00",
-    "machine": "RTX 3070 Ti 8GB VRAM | Ryzen 9 6900HX | 16GB DDR5",
+    "machine": "Windows 11 | NVIDIA GPU (8 GB VRAM) | 16 GB RAM",
     "model": "granite3.1-dense:8b via Ollama",
     "parser": "IBM Docling 2.97.0 (StandardPdfPipeline+PyPdfium)",
     "pipeline": "StandardPdfPipeline+PyPdfium",

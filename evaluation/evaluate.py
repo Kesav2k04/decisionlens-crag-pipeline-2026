@@ -16,6 +16,9 @@ from agent import run
 BASE_DIR = Path(__file__).resolve().parent.parent
 CHUNKS_PATH = BASE_DIR / "data" / "chunks" / "chunks.json"
 
+# Provenance for evaluation runs (written to results.json; no personal hardware identifiers).
+EVAL_MACHINE = "Windows 11 | NVIDIA GPU (8 GB VRAM) | 16 GB RAM"
+
 def load_questions(path: str) -> list:
     with open(path, "r", encoding="utf-8-sig") as f:
         return json.load(f)
@@ -195,7 +198,7 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
     print(f"  generative-only:      {avg_latency_generative:.1f}s per query ({len(gen_latencies)} reach Granite)")
     print(f"Chunks indexed:         {chunk_metadata['chunks_indexed']}")
     print(f"Parser:                 {chunk_metadata['parser']}")
-    print(f"Machine:                RTX 3070 Ti 8GB | Ryzen 9 6900HX | granite3.1-dense:8b")
+    print(f"Machine:                {EVAL_MACHINE} | granite3.1-dense:8b")
     print("=" * 70)
 
     # Save results
@@ -209,7 +212,7 @@ def run_evaluation(questions_path: str = "evaluation/golden_questions.json"):
         "avg_latency_generative_seconds": round(avg_latency_generative, 1),
         "generative_questions": len(gen_latencies),
         "run_date_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-        "machine": "RTX 3070 Ti 8GB VRAM | Ryzen 9 6900HX | 16GB DDR5",
+        "machine": EVAL_MACHINE,
         "model": "granite3.1-dense:8b via Ollama",
         "parser": chunk_metadata["parser"],
         "pipeline": chunk_metadata["pipeline"],

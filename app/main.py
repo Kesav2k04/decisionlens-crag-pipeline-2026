@@ -759,7 +759,7 @@ st.markdown(flat(f"""
 <div class="cx-sub-mono">VAR Decision Transparency Engine · FIFA World Cup MMXXVI</div>
 <div class="cx-plaque">
   <div class="cx-stat"><div class="cx-stat-v"><em>{METRICS['chunks']}</em></div><div class="cx-stat-k">folios · Docling-parsed IFAB text</div></div>
-  <div class="cx-stat"><div class="cx-stat-v">Granite <em>3.1</em></div><div class="cx-stat-k">IBM · 8B · on this machine</div></div>
+  <div class="cx-stat"><div class="cx-stat-v">Granite <em>3.1</em></div><div class="cx-stat-k">IBM · 8B · Granite via Ollama</div></div>
   <div class="cx-stat"><div class="cx-stat-v"><em>{METRICS['citation_pct']:.0f}%</em></div><div class="cx-stat-k">citation fidelity · {METRICS['questions']}-question suite</div></div>
   <div class="cx-stat"><div class="cx-stat-v"><em>{len(LANG_OPTIONS)}</em> tongues</div><div class="cx-stat-k">fan &amp; analyst registers</div></div>
 </div>
@@ -1060,7 +1060,7 @@ STATIONS = [
      "eng-skip" if gate_tripped else ""),
     ("V", "Granite 3.1 · 8B", "the scribe",
      "IBM Granite composes the verdict from the retrieved folios alone — temperature zero, strict JSON, "
-     "wholly on this machine via Ollama.", "IBM Granite", t5,
+     "via private Ollama inference — no third-party chat API.", "IBM Granite", t5,
      "eng-skip" if (gate_tripped or tribunal_abstained) else ""),
     ("VI", "Structured Verdict", "the record",
      "Answer, citations with exact quoted spans, reasoning in clauses, confidence, and — just as "
@@ -1114,7 +1114,7 @@ st.markdown(flat("""
     <span class="cx-cbadge">CRAG self-correction</span>
   </div>
   <div class="cx-colo-note">
-    Composed wholly on this machine — no datum leaves it. Set in Fraunces, Newsreader &amp; IBM Plex Mono.<br>
+    Private inference via IBM Granite and Ollama — no third-party chat APIs. Set in Fraunces, Newsreader &amp; IBM Plex Mono.<br>
     Confidence records the sufficiency of evidence, never the correctness of the match official.
   </div>
 </div>

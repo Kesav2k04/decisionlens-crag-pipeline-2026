@@ -50,11 +50,12 @@ app = FastAPI(
     ),
 )
 
-# CORS: open during local development so the Vite/React dev server can call the API.
-# Tighten allow_origins to the deployed frontend origin before any public hosting.
+# CORS: "*" in dev; set ALLOWED_ORIGINS=https://your-app.vercel.app for production.
+_cors_raw = os.environ.get("ALLOWED_ORIGINS", "*").strip()
+_cors_origins = ["*"] if _cors_raw in ("", "*") else [o.strip() for o in _cors_raw.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],

@@ -35,6 +35,9 @@ web/dist/
 web/build/
 web/.next/
 .vite/
+*.tsbuildinfo
+web/vite.config.js
+web/vite.config.d.ts
 
 # --- Logs ---
 *.log
@@ -57,6 +60,7 @@ scripts/screenshot_app.py
 scripts/smoke_ui.py
 scripts/make_icon.py
 scripts/make_web_icon.py
+scripts/recapture_readme_shots.py
 
 # --- Dev screenshots (README keeps ui_main.png + ui_verdict.png only) ---
 docs/screenshots/*

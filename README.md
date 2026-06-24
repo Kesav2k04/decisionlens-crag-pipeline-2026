@@ -16,11 +16,15 @@ The 2026 FIFA World Cup is the first with 48 teams, which means more matches, mo
 
 ## Demo screenshot
 
-![DecisionLens answering a VAR reviewability question with citations from the IFAB Laws of the Game](docs/screenshots/ui_main.png)
+![DecisionLens — the question desk, with live evaluation metrics and quick-ask prompts](docs/screenshots/ui_main.png)
+
+A cited verdict: the evidence-sufficiency dial, the exact quoted rule span, a functional 3D schematic of the offside geometry, and the live pipeline "engine room" with per-chunk retrieval scores.
+
+![DecisionLens explaining the offside rule — evidence dial, citation with quoted span, a 3D offside schematic, and the six-station pipeline showing live BM25 and vector scores](docs/screenshots/ui_verdict.png)
 
 ## How the system works
 
-A question goes through five stages. First, an incident-pattern guard checks whether the question names a specific player, minute, or match — those facts are not in any rule book, so such questions are routed straight to an abstention response. Second, a hybrid retriever searches 593 chunks produced by IBM Docling from the two official IFAB documents, combining BM25 keyword scores and nomic-embed-text vector similarity through Reciprocal Rank Fusion. Third, a CRAG-style evaluator scores the retrieved evidence: average vector similarity at or above 0.75 is treated as sufficient, below 0.65 triggers abstention, and the band between produces an answer flagged as possibly incomplete. Fourth, IBM Granite 3.1 8B (running locally via Ollama with `format: "json"` and temperature 0) generates a structured answer using only the retrieved chunks. Fifth, the response — answer, decision type, rule citations with exact quoted spans, decision steps, confidence, missing evidence, and sources — is rendered in the Streamlit interface.
+A question goes through five stages. First, an incident-pattern guard checks whether the question names a specific player, minute, or match — those facts are not in any rule book, so such questions are routed straight to an abstention response. Second, a hybrid retriever searches 593 chunks produced by IBM Docling from the two official IFAB documents, combining BM25 keyword scores and nomic-embed-text vector similarity through Reciprocal Rank Fusion. Third, a CRAG-style evaluator scores the retrieved evidence: average vector similarity at or above 0.75 is treated as sufficient, below 0.65 triggers abstention, and the band between produces an answer flagged as possibly incomplete. Fourth, IBM Granite 3.1 8B (running locally via Ollama with `format: "json"` and temperature 0) generates a structured answer using only the retrieved chunks. Fifth, the response — answer, decision type, rule citations with exact quoted spans, decision steps, confidence, missing evidence, and sources — is rendered in the interface: a React + Three.js web app backed by a FastAPI service ([api/main.py](api/main.py)) that wraps the same `run()` engine, with the original Streamlit app ([app/main.py](app/main.py)) kept as a fallback. The web app reserves a targeted 3D schematic only for the geometric decision types (offside, penalty-area, VAR review scope), shown alongside a 2D SVG twin and labelled "schematic, not a real incident".
 
 ## IBM tools used and exact role of each
 
@@ -28,33 +32,39 @@ A question goes through five stages. First, an incident-pattern guard checks whe
 
 **IBM Docling 2.97.0** converts the two IFAB PDFs into structured markdown for chunking. [pipeline/chunk_documents.py](pipeline/chunk_documents.py) uses `DocumentConverter` with `StandardPdfPipeline` and `PyPdfiumDocumentBackend` (OCR and table-structure off, since the IFAB PDFs are born-digital text), saves the parsed markdown to `data/processed/<doc>/docling_parsed.md` for human audit, and splits on markdown headers into 593 chunks, each tagged `"parser": "docling"` in `data/chunks/chunks.json`.
 
-The IFAB Laws of the Game PDF contains structured decision tables, such as the Law 14 penalty-kick outcome matrix (goal/no goal crossed with attacker, defender, and goalkeeper encroachment, each cell giving the restart). Docling's `DocumentConverter` keeps detected tables row/column-ordered in the markdown export rather than collapsing them into unstructured text, so these decision matrices stay intact in the vector index. Evidence: inspect `data/processed/Laws_of_the_Game_2025_26_single_pages/docling_parsed.md` for the pipe-delimited penalty-kick outcome table (around line 2213).
+The IFAB documents are born-digital and consist overwhelmingly of prose and bulleted clauses rather than data tables, so OCR and table-structure recognition are turned off; Docling exports the text and its heading hierarchy to markdown, and `chunk_markdown()` splits on those headings (`#`/`##`/`###`) into chunks of at most 600 characters with 100-character overlap, so each Law or sub-section becomes its own retrievable unit. The exact parser output is committed for audit at `data/processed/Laws_of_the_Game_2025_26_single_pages/docling_parsed.md` and `data/processed/Video_Assistant_Referee_(VAR)_protocol___IFAB/docling_parsed.md`.
 
 **Context Forge (MCP stub)** supplies match metadata through a Model Context Protocol provider pattern. [context_forge/match_context.py](context_forge/match_context.py) is a minimal stub with mock data (match, minute, score, card counts); when enabled, [pipeline/agent.py](pipeline/agent.py) prepends it to the generation prompt as situational context only. It is never injected as rule evidence and never alters retrieval. Production path: replace the mock with a live football-data.org feed.
 
-**LangFlow** provides a visual orchestration view of the pipeline. [langflow/decisionlens_component.py](langflow/decisionlens_component.py) is a Custom Component ("DecisionLens CRAG Agent") that imports `run()` from the real `pipeline/agent.py` — not LangFlow's generic vector-store components — so the flow shown in the LangFlow Playground exercises the same retriever, evaluator, and Granite call as the Streamlit app.
+**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. Use it when you want to show the pipeline as a flow diagram in the IBM stack; day-to-day use is through the React UI at `http://localhost:5173`. See [langflow/README.md](langflow/README.md) for setup and a sample question.
 
 ## Architecture diagram
+
+![DecisionLens system architecture — React web UI, FastAPI, CRAG pipeline with IBM Docling and Granite 3.1 via Ollama, 593 indexed IFAB chunks](docs/architecture/decisionlens-architecture.png)
+
+The diagram above matches the shipped prototype (June 2026): three client surfaces share one `pipeline/agent.py:run()` engine; FastAPI is transport only; ingestion is offline via Docling; all models run locally through Ollama. It deliberately omits infrastructure that is not in the repo (no cloud Kubernetes, no external vector database).
+
+**Pipeline in brief:**
 
 ```
 User Question
      ↓
-[Query Processor: incident-pattern guard + decision-type terms]
+[Incident guard: player/minute/match → abstain]
      ↓
-[Context Forge MCP: mock match metadata] ─┐
-     ↓                                     ↓ (generation prompt only, never rule evidence)
 [Hybrid Retriever: BM25 + nomic-embed-text + RRF] ← 593 chunks (IBM Docling)
      ↓
 [CRAG Evaluator: GOOD ≥ 0.75 → answer | POOR < 0.65 → abstain]
      ↓
-[IBM Granite 3.1 8B via Ollama]
+[Context Forge MCP: mock match metadata] ─→ generation prompt only, never rule evidence
      ↓
-[Structured Response: answer + citations + confidence + missing evidence]
+[IBM Granite 3.1 8B via Ollama · JSON · retrieved chunks only]
+     ↓
+[Structured response → React UI (primary) / FastAPI / LangFlow demo / Streamlit fallback]
 ```
 
 ## Setup instructions
 
-Tested on Windows 11 with an NVIDIA RTX 3070 Ti (8 GB VRAM). An NVIDIA GPU with at least 8 GB VRAM is recommended for the 8B model.
+Tested locally on Windows 11 with an NVIDIA GPU (8 GB VRAM). At least 8 GB VRAM is recommended for the 8B model.
 
 1. Install [Ollama for Windows](https://ollama.com/download) and pull the two models:
 
@@ -86,29 +96,52 @@ Tested on Windows 11 with an NVIDIA RTX 3070 Ti (8 GB VRAM). An NVIDIA GPU with 
    streamlit run app/main.py
    ```
 
-Optional — the LangFlow view of the same pipeline:
+### The React + Three.js web interface (FastAPI + Vite)
+
+The web app talks to a FastAPI service that wraps the same `pipeline/agent.py` engine — no retrieval or generation logic is duplicated.
 
 ```powershell
+# terminal 1 — API (imports run() from pipeline/agent.py)
+.venv-docling\Scripts\python.exe -m uvicorn api.main:app --port 8077
+
+# terminal 2 — web frontend (Vite dev server proxies /api to the FastAPI service)
+cd web
+npm install
+npm run dev   # http://localhost:5173
+```
+
+The Three.js bundle is code-split and loads only when a geometric decision type needs the spatial schematic, so other verdicts never download it.
+
+Optional: LangFlow visual demo (same engine, not a second pipeline):
+
+```powershell
+# Requires langflow installed in this environment (see langflow/README.md)
 python -m langflow run --components-path langflow/ --port 7860
+# Open http://localhost:7860 — add "DecisionLens CRAG Agent", connect a Text Input, run in Playground
 ```
 
 ## Example questions and outputs
 
-Asked "What are the four categories of decisions that VAR can review?", the system retrieves the VAR Protocol's review-category section and answers with the four categories (goal/no goal, penalty/no penalty, direct red card, mistaken identity), citing the IFAB VAR Protocol with the quoted span, confidence 0.74.
+Asked "What are the four categories of decisions that VAR can review?", the system retrieves the VAR Protocol's review-category section and answers with the four categories (goal/no goal, penalty/no penalty, direct red card, mistaken identity), citing the IFAB VAR Protocol with the quoted span, at high evidence sufficiency (the GOOD route, confidence 0.95).
 
 Asked "Was Neymar's handball in the 2026 World Cup final against Argentina deliberate?", the incident guard recognizes a player-and-match-specific question, returns confidence 0.0, and lists the missing evidence ("Specific incident details not available in rule documents", "Video evidence cannot be processed by text system") instead of inventing an answer.
 
 ## Evaluation method and results
 
-The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 golden questions ([evaluation/golden_questions.json](evaluation/golden_questions.json)) covering handball, offside, penalty, red card, and VAR procedure, including three incident-specific questions that the system must refuse. Checks are deterministic: citation presence, expected keywords, abstention correctness, and decision-type match. Results from the run recorded in [evaluation/results.json](evaluation/results.json) (June 2026, RTX 3070 Ti 8 GB VRAM, Ryzen 9 6900HX, 16 GB DDR5, granite3.1-dense:8b, 593 indexed chunks):
+The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 golden questions ([evaluation/golden_questions.json](evaluation/golden_questions.json)) covering handball, offside, penalty, red card, and VAR procedure, including three incident-specific questions that the system must refuse. Checks are deterministic: citation presence, expected keywords, abstention correctness, and decision-type match. Results are recorded in [evaluation/results.json](evaluation/results.json) and regenerated into the table below by [scripts/render_metrics.py](scripts/render_metrics.py), so no figure here is hand-typed:
 
+<!-- METRICS:START -->
 | Metric | Result |
 |---|---|
 | Citation accuracy | 100.0% (50/50) |
-| Abstention accuracy | 100.0% (50/50) |
 | Keyword accuracy | 100.0% (50/50) |
+| Abstention accuracy | 100.0% (50/50) |
 | Decision-type accuracy | 100.0% (50/50) |
-| Average latency | 11.1s per question |
+| Average latency | 9.7s per query (mean over all 50) |
+| Generative latency | 10.4s per query (mean over the 47 that reach Granite) |
+
+Measured by `evaluation/evaluate.py` over 50 golden questions (593 indexed chunks — 557 IFAB Laws of the Game 2025/26, 36 IFAB VAR Protocol Guidelines). Model: granite3.1-dense:8b via Ollama. Parser: IBM Docling 2.97.0 (StandardPdfPipeline+PyPdfium). Machine: Windows 11 | NVIDIA GPU (8 GB VRAM) | 16 GB RAM. Run: 2026-06-21. All figures regenerated from `evaluation/results.json` by `python scripts/render_metrics.py` — none are hand-typed.
+<!-- METRICS:END -->
 
 Reproduce with:
 
@@ -116,6 +149,19 @@ Reproduce with:
 .venv-docling\Scripts\Activate.ps1
 python evaluation/evaluate.py
 ```
+
+### Frontend accessibility and performance
+
+The production web build was audited with Lighthouse (Chrome, headless) against `vite preview`. Measured 2026-06-22:
+
+| Category | Mobile | Desktop |
+|---|---|---|
+| Performance | 91 | 98 |
+| Accessibility | 100 | 100 |
+| Best Practices | 100 | 100 |
+| SEO | 100 | 100 |
+
+Mobile first paint 1.4s, largest contentful paint 3.5s, cumulative layout shift 0. Text colours meet WCAG AA contrast on the parchment surfaces (warm accent colours are reserved for large or bold type and rule work). The interface degrades gracefully: when WebGL is unavailable or the user prefers reduced motion, the 3D schematic is replaced by a static 2D SVG twin. The Three.js bundle is code-split and is not fetched on the landing page; it loads only when a verdict needs the spatial schematic (verified by inspecting network requests on first load).
 
 ## Limitations
 
