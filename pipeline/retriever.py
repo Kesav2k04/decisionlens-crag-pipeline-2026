@@ -17,7 +17,8 @@ CACHE_PATH  = os.path.join(BASE_DIR, "data", "embeddings_cache.npz")
 BM25_CACHE_PATH = os.path.join(BASE_DIR, "data", "chunks", "bm25_cache.pkl")
 
 _ollama_host = os.environ.get("OLLAMA_HOST", "127.0.0.1:11434")
-OLLAMA_EMBED_URL = os.environ.get("OLLAMA_EMBED_URL", f"http://{_ollama_host}/api/embeddings")
+OLLAMA_EMBED_URL = os.environ.get("OLLAMA_EMBED_URL", f"http://{_ollama_host}/api/embed")
+EMBED_MODEL = os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text")
 
 # ── helpers ────────────────────────────────────────────────
 
@@ -46,16 +47,40 @@ def legacy_chunks_fingerprint(chunks: list) -> str:
     return hashlib.md5(json.dumps([c["chunk_id"] for c in chunks]).encode()).hexdigest()
 
 def get_embedding(text: str) -> list:
+    """Return an embedding vector; supports modern (/api/embed) and legacy Ollama APIs."""
+    modern_url = OLLAMA_EMBED_URL
+    legacy_url = modern_url.replace("/api/embed", "/api/embeddings")
+    if legacy_url == modern_url:
+        legacy_url = f"http://{_ollama_host}/api/embeddings"
+
     try:
         r = requests.post(
-            OLLAMA_EMBED_URL,
-            json={"model": "nomic-embed-text", "prompt": text},
-            timeout=15
+            modern_url,
+            json={"model": EMBED_MODEL, "input": text},
+            timeout=30,
         )
         if r.status_code == 200:
-            return r.json()["embedding"]
+            data = r.json()
+            if data.get("embeddings"):
+                return data["embeddings"][0]
+            if data.get("embedding"):
+                return data["embedding"]
     except Exception:
         pass
+
+    try:
+        r = requests.post(
+            legacy_url,
+            json={"model": EMBED_MODEL, "prompt": text},
+            timeout=30,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            if data.get("embedding"):
+                return data["embedding"]
+    except Exception:
+        pass
+
     return [0.0] * 768
 
 def embed_all_parallel(chunks: list, max_workers: int = 4) -> np.ndarray:

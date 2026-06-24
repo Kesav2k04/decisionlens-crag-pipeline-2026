@@ -1,8 +1,14 @@
 # DecisionLens
 
-[![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org)
+[![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org) [![Live demo](https://img.shields.io/badge/Live%20demo-decisionlens--june--2026.vercel.app-2D6A4F)](https://decisionlens-june-2026.vercel.app)
 
 DecisionLens answers football fans' questions about VAR and referee decisions by retrieving the exact passages from the official IFAB Laws of the Game 2025/26 and VAR Protocol, then explaining the decision in plain language with citations — and abstaining when the rule text cannot support an answer.
+
+## Live demo
+
+**https://decisionlens-june-2026.vercel.app**
+
+The React UI is hosted on Vercel; `/api/*` is proxied to a GCP GPU VM running Ollama (IBM Granite 3.1 8B) and the FastAPI service ([web/vercel.json](web/vercel.json), [deploy/README.md](deploy/README.md)). The backend may be offline between demo recording and the judge review window (1–14 July 2026) to conserve cloud credits — the frontend will load, but questions will fail until the VM is started again.
 
 ---
 
@@ -36,13 +42,13 @@ The IFAB documents are born-digital and consist overwhelmingly of prose and bull
 
 **Context Forge (MCP stub)** supplies match metadata through a Model Context Protocol provider pattern. [context_forge/match_context.py](context_forge/match_context.py) is a minimal stub with mock data (match, minute, score, card counts); when enabled, [pipeline/agent.py](pipeline/agent.py) prepends it to the generation prompt as situational context only. It is never injected as rule evidence and never alters retrieval. Production path: replace the mock with a live football-data.org feed.
 
-**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. Use it when you want to show the pipeline as a flow diagram in the IBM stack; day-to-day use is through the React UI at `http://localhost:5173`. See [langflow/README.md](langflow/README.md) for setup and a sample question.
+**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. Use it when you want to show the pipeline as a flow diagram in the IBM stack; day-to-day use is through the [live demo](https://decisionlens-june-2026.vercel.app) or local dev at `http://localhost:5173`. See [langflow/README.md](langflow/README.md) for setup and a sample question.
 
 ## Architecture diagram
 
 ![DecisionLens system architecture — React web UI, FastAPI, CRAG pipeline with IBM Docling and Granite 3.1 via Ollama, 593 indexed IFAB chunks](docs/architecture/decisionlens-architecture.png)
 
-The diagram above matches the shipped prototype (June 2026): three client surfaces share one `pipeline/agent.py:run()` engine; FastAPI is transport only; ingestion is offline via Docling; all models run locally through Ollama. It deliberately omits infrastructure that is not in the repo (no cloud Kubernetes, no external vector database).
+The diagram above matches the shipped prototype (June 2026): three client surfaces share one `pipeline/agent.py:run()` engine; FastAPI is transport only; ingestion is offline via Docling; models run via Ollama (locally for development, on a GCP GPU VM for the [live demo](https://decisionlens-june-2026.vercel.app)). It deliberately omits infrastructure that is not in the repo (no cloud Kubernetes, no external vector database).
 
 **Pipeline in brief:**
 
@@ -111,6 +117,10 @@ npm run dev   # http://localhost:5173
 ```
 
 The Three.js bundle is code-split and loads only when a geometric decision type needs the spatial schematic, so other verdicts never download it.
+
+### Hosted demo (Vercel + GCP)
+
+Production demo: [decisionlens-june-2026.vercel.app](https://decisionlens-june-2026.vercel.app). Start/stop schedule and VM commands: [deploy/README.md](deploy/README.md).
 
 Optional: LangFlow visual demo (same engine, not a second pipeline):
 
