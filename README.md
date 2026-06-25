@@ -8,7 +8,19 @@ DecisionLens answers football fans' questions about VAR and referee decisions by
 
 **https://decisionlens-june-2026.vercel.app**
 
-The React UI is hosted on Vercel; `/api/*` is proxied to a GCP GPU VM running Ollama (IBM Granite 3.1 8B) and the FastAPI service ([web/vercel.json](web/vercel.json), [deploy/README.md](deploy/README.md)). The backend may be offline between demo recording and the judge review window (1–14 July 2026) to conserve cloud credits — the frontend will load, but questions will fail until the VM is started again.
+The React UI is hosted on Vercel; `/api/*` is proxied to a GCP Compute Engine VM (NVIDIA L4) running Ollama (IBM Granite 3.1 8B) and the FastAPI service ([web/vercel.json](web/vercel.json), [deploy/README.md](deploy/README.md)).
+
+**Hosted demo schedule (June–July 2026):** the backend may be **stopped** between demo recording and the judge review window to conserve GCP trial credits. The Vercel frontend stays online; `/api/*` fails until the VM is started again. From **1 July** through the review period, the VM runs continuously for judges.
+
+### Development vs hosted inference
+
+| Context | Where it runs | Hardware |
+|---|---|---|
+| **Evaluation suite** (`evaluation/evaluate.py`, June 21 run) | Local Windows dev machine | NVIDIA GPU, 8 GB VRAM, 16 GB RAM |
+| **Local development** | Your laptop + Ollama | Same as above (≥ 8 GB VRAM recommended) |
+| **Live demo (judges)** | Vercel + GCP Compute Engine `decisionlens-api` | NVIDIA **L4** GPU VM, `us-central1` |
+
+The evaluation metrics in this README were measured on the **local dev machine**, not on GCP. The **same** `pipeline/agent.py` engine and models power both environments; only the host changes for the temporary public showcase.
 
 ---
 
@@ -42,7 +54,7 @@ The IFAB documents are born-digital and consist overwhelmingly of prose and bull
 
 **Context Forge (MCP stub)** supplies match metadata through a Model Context Protocol provider pattern. [context_forge/match_context.py](context_forge/match_context.py) is a minimal stub with mock data (match, minute, score, card counts); when enabled, [pipeline/agent.py](pipeline/agent.py) prepends it to the generation prompt as situational context only. It is never injected as rule evidence and never alters retrieval. Production path: replace the mock with a live football-data.org feed.
 
-**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. Use it when you want to show the pipeline as a flow diagram in the IBM stack; day-to-day use is through the [live demo](https://decisionlens-june-2026.vercel.app) or local dev at `http://localhost:5173`. See [langflow/README.md](langflow/README.md) for setup and a sample question.
+**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. LangFlow is **not** deployed online for this submission — it runs locally for a short screen-recording clip in the demo video (see [langflow/README.md](langflow/README.md)). Day-to-day judging uses the [live demo](https://decisionlens-june-2026.vercel.app).
 
 ## Architecture diagram
 
@@ -120,7 +132,7 @@ The Three.js bundle is code-split and loads only when a geometric decision type 
 
 ### Hosted demo (Vercel + GCP)
 
-Production demo: [decisionlens-june-2026.vercel.app](https://decisionlens-june-2026.vercel.app). Start/stop schedule and VM commands: [deploy/README.md](deploy/README.md).
+Production demo: [decisionlens-june-2026.vercel.app](https://decisionlens-june-2026.vercel.app). Start/stop schedule and VM commands: [deploy/README.md](deploy/README.md). BeMyApp publish copy and video order: [docs/SUBMISSION.md](docs/SUBMISSION.md).
 
 Optional: LangFlow visual demo (same engine, not a second pipeline):
 
@@ -150,7 +162,7 @@ The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 
 | Average latency | 9.7s per query (mean over all 50) |
 | Generative latency | 10.4s per query (mean over the 47 that reach Granite) |
 
-Measured by `evaluation/evaluate.py` over 50 golden questions (593 indexed chunks — 557 IFAB Laws of the Game 2025/26, 36 IFAB VAR Protocol Guidelines). Model: granite3.1-dense:8b via Ollama. Parser: IBM Docling 2.97.0 (StandardPdfPipeline+PyPdfium). Machine: Windows 11 | NVIDIA GPU (8 GB VRAM) | 16 GB RAM. Run: 2026-06-21. All figures regenerated from `evaluation/results.json` by `python scripts/render_metrics.py` — none are hand-typed.
+Measured by `evaluation/evaluate.py` over 50 golden questions (593 indexed chunks — 557 IFAB Laws of the Game 2025/26, 36 IFAB VAR Protocol Guidelines). Model: granite3.1-dense:8b via Ollama. Parser: IBM Docling 2.97.0 (StandardPdfPipeline+PyPdfium). **Evaluation machine:** Windows 11 \| NVIDIA GPU (8 GB VRAM) \| 16 GB RAM. Run: 2026-06-21. **Hosted demo inference:** GCP Compute Engine VM with NVIDIA L4 (see [deploy/README.md](deploy/README.md)). All figures regenerated from `evaluation/results.json` by `python scripts/render_metrics.py` — none are hand-typed.
 <!-- METRICS:END -->
 
 Reproduce with:
