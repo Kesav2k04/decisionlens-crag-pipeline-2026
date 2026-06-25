@@ -62,6 +62,9 @@ scripts/make_icon.py
 scripts/make_web_icon.py
 scripts/recapture_readme_shots.py
 
+# Internal submission notes (local only, do not commit)
+docs/SUBMISSION.md
+
 # --- Dev screenshots (README keeps ui_main.png + ui_verdict.png only) ---
 docs/screenshots/*
 !docs/screenshots/ui_main.png

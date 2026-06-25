@@ -59,19 +59,21 @@ def build_block() -> str:
     table = ["| Metric | Result |", "|---|---|"]
     table += [f"| {k} | {v} |" for k, v in rows]
 
-    # Provenance line — machine, model, parser, index size, run date.
+    # Provenance line: machine, model, parser, index size, run date.
     src = s.get("source_counts", {})
     src_str = ", ".join(f"{n} {name}" for name, n in src.items()) if src else ""
     run_date = (s.get("run_date_utc") or "").split("T")[0]
+    chunk_detail = f"{s.get('chunks_indexed')} indexed chunks"
+    if src_str:
+        chunk_detail += f" ({src_str})"
     prov = (
         f"Measured by `evaluation/evaluate.py` over {total} golden questions "
-        f"({s.get('chunks_indexed')} indexed chunks"
-        f"{' — ' + src_str if src_str else ''}). "
+        f"({chunk_detail}). "
         f"Model: {s.get('model')}. Parser: {s.get('parser')}. "
         f"Machine: {s.get('machine')}."
         f"{' Run: ' + run_date + '.' if run_date else ''} "
         f"All figures regenerated from `evaluation/results.json` by "
-        f"`python scripts/render_metrics.py` — none are hand-typed."
+        f"`python scripts/render_metrics.py`; none are hand-typed."
     )
 
     return START + "\n" + "\n".join(table) + "\n\n" + prov + "\n" + END

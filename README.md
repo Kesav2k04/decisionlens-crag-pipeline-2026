@@ -2,7 +2,7 @@
 
 [![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org) [![Live demo](https://img.shields.io/badge/Live%20demo-decisionlens--june--2026.vercel.app-2D6A4F)](https://decisionlens-june-2026.vercel.app)
 
-DecisionLens answers football fans' questions about VAR and referee decisions by retrieving the exact passages from the official IFAB Laws of the Game 2025/26 and VAR Protocol, then explaining the decision in plain language with citations — and abstaining when the rule text cannot support an answer.
+DecisionLens answers football fans' questions about VAR and referee decisions by retrieving the exact passages from the official IFAB Laws of the Game 2025/26 and VAR Protocol, then explaining the decision in plain language with citations, and abstaining when the rule text cannot support an answer.
 
 ## Live demo
 
@@ -26,7 +26,7 @@ The evaluation metrics in this README were measured on the **local dev machine**
 
 ## Problem statement
 
-When a goal is disallowed or a penalty is awarded at a World Cup match, fans see the referee's signal but not the reasoning. The Laws of the Game run to hundreds of pages of legal-style text, and the VAR Protocol adds a separate layer of procedure (silent checks, on-field reviews, the four reviewable categories). A fan asking "why was that handball?" has no practical way to find the governing clause. General-purpose chatbots answer these questions fluently but without grounding — they routinely invent rule numbers and misstate the 2025/26 amendments, such as the new eight-second goalkeeper possession rule.
+When a goal is disallowed or a penalty is awarded at a World Cup match, fans see the referee's signal but not the reasoning. The Laws of the Game run to hundreds of pages of legal-style text, and the VAR Protocol adds a separate layer of procedure (silent checks, on-field reviews, the four reviewable categories). A fan asking "why was that handball?" has no practical way to find the governing clause. General-purpose chatbots answer these questions fluently but without grounding; they routinely invent rule numbers and misstate the 2025/26 amendments, such as the new eight-second goalkeeper possession rule.
 
 ## Why it matters for World Cup soccer
 
@@ -34,15 +34,15 @@ The 2026 FIFA World Cup is the first with 48 teams, which means more matches, mo
 
 ## Demo screenshot
 
-![DecisionLens — the question desk, with live evaluation metrics and quick-ask prompts](docs/screenshots/ui_main.png)
+![DecisionLens: the question desk, with live evaluation metrics and quick-ask prompts](docs/screenshots/ui_main.png)
 
 A cited verdict: the evidence-sufficiency dial, the exact quoted rule span, a functional 3D schematic of the offside geometry, and the live pipeline "engine room" with per-chunk retrieval scores.
 
-![DecisionLens explaining the offside rule — evidence dial, citation with quoted span, a 3D offside schematic, and the six-station pipeline showing live BM25 and vector scores](docs/screenshots/ui_verdict.png)
+![DecisionLens explaining the offside rule: evidence dial, citation with quoted span, a 3D offside schematic, and the six-station pipeline showing live BM25 and vector scores](docs/screenshots/ui_verdict.png)
 
 ## How the system works
 
-A question goes through five stages. First, an incident-pattern guard checks whether the question names a specific player, minute, or match — those facts are not in any rule book, so such questions are routed straight to an abstention response. Second, a hybrid retriever searches 593 chunks produced by IBM Docling from the two official IFAB documents, combining BM25 keyword scores and nomic-embed-text vector similarity through Reciprocal Rank Fusion. Third, a CRAG-style evaluator scores the retrieved evidence: average vector similarity at or above 0.75 is treated as sufficient, below 0.65 triggers abstention, and the band between produces an answer flagged as possibly incomplete. Fourth, IBM Granite 3.1 8B (running locally via Ollama with `format: "json"` and temperature 0) generates a structured answer using only the retrieved chunks. Fifth, the response — answer, decision type, rule citations with exact quoted spans, decision steps, confidence, missing evidence, and sources — is rendered in the interface: a React + Three.js web app backed by a FastAPI service ([api/main.py](api/main.py)) that wraps the same `run()` engine, with the original Streamlit app ([app/main.py](app/main.py)) kept as a fallback. The web app reserves a targeted 3D schematic only for the geometric decision types (offside, penalty-area, VAR review scope), shown alongside a 2D SVG twin and labelled "schematic, not a real incident".
+A question goes through five stages. First, an incident-pattern guard checks whether the question names a specific player, minute, or match; those facts are not in any rule book, so such questions are routed straight to an abstention response. Second, a hybrid retriever searches 593 chunks produced by IBM Docling from the two official IFAB documents, combining BM25 keyword scores and nomic-embed-text vector similarity through Reciprocal Rank Fusion. Third, a CRAG-style evaluator scores the retrieved evidence: average vector similarity at or above 0.75 is treated as sufficient, below 0.65 triggers abstention, and the band between produces an answer flagged as possibly incomplete. Fourth, IBM Granite 3.1 8B (running locally via Ollama with `format: "json"` and temperature 0) generates a structured answer using only the retrieved chunks. Fifth, the response (answer, decision type, rule citations with exact quoted spans, decision steps, confidence, missing evidence, and sources) is rendered in the interface: a React + Three.js web app backed by a FastAPI service ([api/main.py](api/main.py)) that wraps the same `run()` engine, with the original Streamlit app ([app/main.py](app/main.py)) kept as a fallback. The web app reserves a targeted 3D schematic only for the geometric decision types (offside, penalty-area, VAR review scope), shown alongside a 2D SVG twin and labelled "schematic, not a real incident".
 
 ## IBM tools used and exact role of each
 
@@ -54,11 +54,11 @@ The IFAB documents are born-digital and consist overwhelmingly of prose and bull
 
 **Context Forge (MCP stub)** supplies match metadata through a Model Context Protocol provider pattern. [context_forge/match_context.py](context_forge/match_context.py) is a minimal stub with mock data (match, minute, score, card counts); when enabled, [pipeline/agent.py](pipeline/agent.py) prepends it to the generation prompt as situational context only. It is never injected as rule evidence and never alters retrieval. Production path: replace the mock with a live football-data.org feed.
 
-**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. LangFlow is **not** deployed online for this submission — it runs locally for a short screen-recording clip in the demo video (see [langflow/README.md](langflow/README.md)). Day-to-day judging uses the [live demo](https://decisionlens-june-2026.vercel.app).
+**LangFlow** is an optional visual demo surface for judges and reviewers. It does not run a separate pipeline. The custom component [langflow/decisionlens_component.py](langflow/decisionlens_component.py) ("DecisionLens CRAG Agent") imports `run()` directly from [pipeline/agent.py](pipeline/agent.py), so the LangFlow Playground exercises the same hybrid retriever, CRAG evaluator, and Granite call as the React web app and FastAPI service. LangFlow is **not** deployed online for this submission; it runs locally for a short screen-recording clip in the demo video (see [langflow/README.md](langflow/README.md)). Day-to-day judging uses the [live demo](https://decisionlens-june-2026.vercel.app).
 
 ## Architecture diagram
 
-![DecisionLens system architecture — React web UI, FastAPI, CRAG pipeline with IBM Docling and Granite 3.1 via Ollama, 593 indexed IFAB chunks](docs/architecture/decisionlens-architecture.png)
+![DecisionLens system architecture: React web UI, FastAPI, CRAG pipeline with IBM Docling and Granite 3.1 via Ollama, 593 indexed IFAB chunks](docs/architecture/decisionlens-architecture.png)
 
 The diagram above matches the shipped prototype (June 2026): three client surfaces share one `pipeline/agent.py:run()` engine; FastAPI is transport only; ingestion is offline via Docling; models run via Ollama (locally for development, on a GCP GPU VM for the [live demo](https://decisionlens-june-2026.vercel.app)). It deliberately omits infrastructure that is not in the repo (no cloud Kubernetes, no external vector database).
 
@@ -116,13 +116,13 @@ Tested locally on Windows 11 with an NVIDIA GPU (8 GB VRAM). At least 8 GB VRAM 
 
 ### The React + Three.js web interface (FastAPI + Vite)
 
-The web app talks to a FastAPI service that wraps the same `pipeline/agent.py` engine — no retrieval or generation logic is duplicated.
+The web app talks to a FastAPI service that wraps the same `pipeline/agent.py` engine; no retrieval or generation logic is duplicated.
 
 ```powershell
-# terminal 1 — API (imports run() from pipeline/agent.py)
+# terminal 1: API (imports run() from pipeline/agent.py)
 .venv-docling\Scripts\python.exe -m uvicorn api.main:app --port 8077
 
-# terminal 2 — web frontend (Vite dev server proxies /api to the FastAPI service)
+# terminal 2: web frontend (Vite dev server proxies /api to the FastAPI service)
 cd web
 npm install
 npm run dev   # http://localhost:5173
@@ -132,14 +132,14 @@ The Three.js bundle is code-split and loads only when a geometric decision type 
 
 ### Hosted demo (Vercel + GCP)
 
-Production demo: [decisionlens-june-2026.vercel.app](https://decisionlens-june-2026.vercel.app). Start/stop schedule and VM commands: [deploy/README.md](deploy/README.md). BeMyApp publish copy and video order: [docs/SUBMISSION.md](docs/SUBMISSION.md).
+Production demo: [decisionlens-june-2026.vercel.app](https://decisionlens-june-2026.vercel.app). VM start/stop commands: [deploy/README.md](deploy/README.md).
 
 Optional: LangFlow visual demo (same engine, not a second pipeline):
 
 ```powershell
 # Requires langflow installed in this environment (see langflow/README.md)
 python -m langflow run --components-path langflow/ --port 7860
-# Open http://localhost:7860 — add "DecisionLens CRAG Agent", connect a Text Input, run in Playground
+# Open http://localhost:7860: add "DecisionLens CRAG Agent", connect a Text Input, run in Playground
 ```
 
 ## Example questions and outputs
@@ -162,7 +162,7 @@ The evaluation suite ([evaluation/evaluate.py](evaluation/evaluate.py)) runs 50 
 | Average latency | 9.7s per query (mean over all 50) |
 | Generative latency | 10.4s per query (mean over the 47 that reach Granite) |
 
-Measured by `evaluation/evaluate.py` over 50 golden questions (593 indexed chunks — 557 IFAB Laws of the Game 2025/26, 36 IFAB VAR Protocol Guidelines). Model: granite3.1-dense:8b via Ollama. Parser: IBM Docling 2.97.0 (StandardPdfPipeline+PyPdfium). **Evaluation machine:** Windows 11 \| NVIDIA GPU (8 GB VRAM) \| 16 GB RAM. Run: 2026-06-21. **Hosted demo inference:** GCP Compute Engine VM with NVIDIA L4 (see [deploy/README.md](deploy/README.md)). All figures regenerated from `evaluation/results.json` by `python scripts/render_metrics.py` — none are hand-typed.
+Measured by `evaluation/evaluate.py` over 50 golden questions (593 indexed chunks (557 IFAB Laws of the Game 2025/26, 36 IFAB VAR Protocol Guidelines)). Model: granite3.1-dense:8b via Ollama. Parser: IBM Docling 2.97.0 (StandardPdfPipeline+PyPdfium). Machine: Windows 11 | NVIDIA GPU (8 GB VRAM) | 16 GB RAM. Run: 2026-06-21. All figures regenerated from `evaluation/results.json` by `python scripts/render_metrics.py`; none are hand-typed.
 <!-- METRICS:END -->
 
 Reproduce with:
@@ -188,9 +188,9 @@ Mobile first paint 1.4s, largest contentful paint 3.5s, cumulative layout shift 
 ## Limitations
 
 - DecisionLens explains decisions using the available rule text; it does not judge whether the match officials were right, and it does not replace them.
-- It cannot infer facts it has not seen: no video, tracking, or audio is processed, so it cannot say what actually happened in an incident — only what the Laws say about such situations.
+- It cannot infer facts it has not seen: no video, tracking, or audio is processed, so it cannot say what actually happened in an incident; only what the Laws say about such situations.
 - Live VAR incident data (the referee's actual reasoning for a specific review) is not published in a usable feed, so incident-specific questions are answered by abstention, not analysis.
-- The confidence score measures evidence sufficiency — how well the retrieved text covers the question — not guaranteed correctness of the answer.
+- The confidence score measures evidence sufficiency (how well the retrieved text covers the question), not guaranteed correctness of the answer.
 - The knowledge base is the IFAB Laws of the Game 2025/26 and VAR Protocol; competition-specific regulations (e.g. FIFA World Cup squad or technology rules) must be verified separately.
 - All 50 evaluation questions pass all four checks in the current run; details are in `evaluation/results.json`.
 
@@ -200,6 +200,6 @@ Planned next steps: ingest competition-specific FIFA regulations as a third sour
 
 ## Team and roles
 
-- **Kesav** — project lead, product direction, ingestion and retrieval pipeline (Docling, BM25 + embedding + RRF), CRAG agent, evaluation suite, evidence register, documentation, demo script, presentation, and final quality gate.
-- **Karthi** — local model infrastructure (Ollama setup, Granite deployment), agent loop testing, LangFlow integration, app integration support.
+- **Kesav**: project lead, product direction, ingestion and retrieval pipeline (Docling, BM25 + embedding + RRF), CRAG agent, evaluation suite, documentation, and demo video.
+- **Karthi**: local model infrastructure (Ollama setup, Granite deployment), agent loop testing, LangFlow integration, app integration support.
 
