@@ -1,6 +1,6 @@
 # DecisionLens
 
-[![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org) [![Live demo](https://img.shields.io/badge/Live%20demo-decisionlens--june--2026.vercel.app-2D6A4F)](https://decisionlens-june-2026.vercel.app)
+[![Repository](https://img.shields.io/badge/GitHub-Kesav2k04%2Fdecisionlens--june--2026-1B4332)](https://github.com/Kesav2k04/decisionlens-june-2026) [![License: MIT](https://img.shields.io/badge/License-MIT-B8860B.svg)](LICENSE) [![Challenge](https://img.shields.io/badge/IBM%20SkillsBuild-AI%20Builders%20June%202026-1A2744)](https://skillsbuild.org) [![Live demo](https://img.shields.io/badge/Live%20demo-decisionlens--june--2026.vercel.app-2D6A4F)](https://decisionlens-june-2026.vercel.app) [![Demo Video](https://img.shields.io/badge/YouTube-Watch%20Demo-FF0000?logo=youtube&logoColor=white)](https://youtu.be/8xBhV_rkuRk)
 
 DecisionLens answers football fans' questions about VAR and referee decisions by retrieving the exact passages from the official IFAB Laws of the Game 2025/26 and VAR Protocol, then explaining the decision in plain language with citations, and abstaining when the rule text cannot support an answer.
 
