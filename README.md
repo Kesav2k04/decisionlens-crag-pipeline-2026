@@ -13,7 +13,7 @@ DecisionLens answers football fans' questions about VAR and referee decisions by
 
 The React UI is hosted on Vercel; `/api/*` is proxied to a GCP Compute Engine VM (NVIDIA L4) running Ollama (IBM Granite 3.1 8B) and the FastAPI service ([web/vercel.json](web/vercel.json), [deploy/README.md](deploy/README.md)).
 
-**Hosted demo schedule (June–July 2026):** the backend may be **stopped** between demo recording and the judge review window to conserve GCP trial credits. The Vercel frontend stays online; `/api/*` fails until the VM is started again. From **1 July** through the review period, the VM runs continuously for judges.
+**Judge Review Window (July 1–14, 2026):** The production backend and API are configured to run continuously 24/7 during the evaluation period to ensure zero-downtime access for judges.
 
 ### Development vs hosted inference
 
@@ -21,7 +21,7 @@ The React UI is hosted on Vercel; `/api/*` is proxied to a GCP Compute Engine VM
 |---|---|---|
 | **Evaluation suite** (`evaluation/evaluate.py`, June 21 run) | Local Windows dev machine | NVIDIA GPU, 8 GB VRAM, 16 GB RAM |
 | **Local development** | Your laptop + Ollama | Same as above (≥ 8 GB VRAM recommended) |
-| **Live demo (judges)** | Vercel + GCP Compute Engine `decisionlens-api` | NVIDIA **L4** GPU VM, `us-central1` |
+| **Live demo (judges)** | Vercel + GCP Compute Engine `decisionlens-api` | NVIDIA **L4** GPU VM, `northamerica-northeast2` |
 
 The evaluation metrics in this README were measured on the **local dev machine**, not on GCP. The **same** `pipeline/agent.py` engine and models power both environments; only the host changes for the temporary public showcase.
 
