@@ -27,24 +27,6 @@ If LangFlow and the web app both answer the same question, they should return th
 - Not required to run the product. The hackathon demo works fully with React + FastAPI + Ollama alone.
 - Not connected to live match video or incident feeds.
 
-## Showcase in the hackathon (recommended)
-
-LangFlow is **not** part of the public live URL. Judges click **Vercel**; LangFlow appears in your **video** as proof you integrated the IBM visual stack.
-
-| Method | Effort | Judge impact |
-|---|---|---|
-| **15–20 s screen clip in demo video** | Low | High — shows IBM LangFlow + same engine |
-| README + architecture mention | Done | Medium |
-| Deploy LangFlow online | High, not required | Low — judges rarely run LangFlow flows |
-
-**Perfect showcase workflow:**
-
-1. Record the main demo on **https://decisionlens-june-2026.vercel.app** (primary).
-2. Locally: `python -m langflow run --components-path langflow/ --port 7860`
-3. Record **one** Playground run: Text Input → DecisionLens CRAG Agent → same VAR question as the web demo.
-4. Voiceover one line: *“The same `run()` function powers the web app and this LangFlow component — one engine, not two pipelines.”*
-
-LangFlow Desktop / local server is the **standard** hackathon pattern. Online LangFlow hosting is possible (Docker Space) but unnecessary when you already have a live Vercel demo.
 
 ## Prerequisites
 
