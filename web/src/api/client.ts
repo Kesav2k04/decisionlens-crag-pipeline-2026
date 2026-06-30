@@ -163,6 +163,7 @@ export { ApiError }
 export const DECISION_META: Record<string, { color: string; label: string }> = {
   handball: { color: '#9c4a2a', label: 'Handball' },        /* deep terracotta */
   red_card: { color: '#993030', label: 'Red card' },        /* vermillion */
+  yellow_card: { color: '#b38f1a', label: 'Yellow card' },  /* gold/yellow */
   offside: { color: '#344e6b', label: 'Offside' },          /* ledger blue */
   penalty: { color: '#7a611f', label: 'Penalty' },          /* deep gold */
   var_reviewability: { color: '#3a5638', label: 'VAR review' }, /* heritage green */
@@ -215,6 +216,7 @@ export function getQuickAskVisualTag(question: string): { kind: QuickAskVisualKi
   }
   if (/\bhandball\b/.test(q)) return { kind: 'text', label: 'Text only' }
   if (/\bred card\b|straight red\b/.test(q)) return { kind: 'text', label: 'Text only' }
+  if (/\byellow card\b|caution\b/.test(q)) return { kind: 'text', label: 'Text only' }
   return null
 }
 

@@ -65,7 +65,7 @@ export function VerdictRecord({ question, result, index }: { question: string; r
         </Suspense>
       )}
 
-      {result.tactical_context && (decisionType === 'red_card' || decisionType === 'penalty') && (
+      {result.tactical_context && (decisionType === 'red_card' || decisionType === 'yellow_card' || decisionType === 'penalty') && (
         <>
           <div className="dl-rec-sec">Match impact</div>
           <div className="dl-marg">

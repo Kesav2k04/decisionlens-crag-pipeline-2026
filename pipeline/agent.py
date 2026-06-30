@@ -1,4 +1,4 @@
-﻿# pipeline/agent.py
+# pipeline/agent.py
 # DecisionLens CRAG Agent
 # Connects retriever → evaluator → Granite generation
 
@@ -31,7 +31,7 @@ POOR_THRESHOLD = 0.65   # Reverted back to 0.65 to capture legitimate edge rules
 
 # ── Schema Normalizer Maps ──────────────────────────────────
 VALID_DECISION_TYPES = {
-    "handball", "offside", "penalty", "red_card", "var_reviewability", "unknown"
+    "handball", "offside", "penalty", "red_card", "yellow_card", "var_reviewability", "unknown"
 }
 
 TYPE_MAP = {
@@ -39,8 +39,8 @@ TYPE_MAP = {
     "disciplinary": "red_card",
     "corner kick": "handball",     # 8-second goalkeeper rule lives in Law 12
     "corner_kick": "handball",
-    "caution": "red_card",         # two cautions = second yellow = red card
-    "yellow card": "red_card",
+    "caution": "yellow_card",         # two cautions = second yellow = red card
+    "yellow card": "yellow_card",
     "sending off": "red_card",
     "sending-off": "red_card",
     "var": "var_reviewability",
@@ -120,9 +120,9 @@ def classify_question_decision_type(question: str) -> str:
     if any(term in q for term in handball_terms):
         return "handball"
 
-    caution_terms = ("caution", "cautioned", "unsporting behaviour")
+    caution_terms = ("caution", "cautioned", "unsporting behaviour", "yellow card")
     if any(term in q for term in caution_terms):
-        return "red_card"
+        return "yellow_card"
 
     return "unknown"
 
@@ -162,8 +162,8 @@ STRICT RULES:
 5. Keep the answer field in plain language a non-expert fan can understand.
 6. confidence is evidence sufficiency (0.0 to 1.0), not factual certainty.
 7. 'decision_steps' MUST be a flat list of strings. Do not nest objects inside it.
-8. Choose decision_type from the user's governing topic: handball, offside, penalty, red_card for disciplinary/send-off questions, var_reviewability for VAR process/review questions, or unknown.
-9. If decision_type is red_card or penalty, populate tactical_context with a brief one-sentence match-impact note (e.g. numerical disadvantage, restart type). For all other types, set tactical_context to empty string. This is interpretation only. Do not cite IFAB text in this field."""
+8. Choose decision_type from the user's governing topic: handball, offside, penalty, red_card, yellow_card for disciplinary/send-off questions, var_reviewability for VAR process/review questions, or unknown.
+9. If decision_type is red_card, yellow_card, or penalty, populate tactical_context with a brief one-sentence match-impact note (e.g. numerical disadvantage, restart type). For all other types, set tactical_context to empty string. This is interpretation only. Do not cite IFAB text in this field."""
 
 # Audience-mode addenda appended to the system prompt. Default "fan" matches the
 # tone the frozen evaluation run was scored with.
@@ -202,7 +202,7 @@ RULE CONTEXT:
 Respond in this exact JSON format:
 {{
   "answer": "Plain language explanation for a football fan",
-  "decision_type": "handball | offside | penalty | red_card | var_reviewability | unknown",
+  "decision_type": "handball | offside | penalty | red_card | yellow_card | var_reviewability | unknown",
   "rule_citations": [
     {{
       "source": "document name",
@@ -304,7 +304,7 @@ def finalize_result(result: dict, language: str) -> dict:
     tactical = result.get("tactical_context", "")
     if not isinstance(tactical, str):
         tactical = ""
-    if result.get("decision_type") not in ("red_card", "penalty"):
+    if result.get("decision_type") not in ("red_card", "yellow_card", "penalty"):
         tactical = ""
     result["tactical_context"] = tactical
     result["language"] = language
