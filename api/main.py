@@ -37,7 +37,7 @@ QUICK_ASKS = [
     "Explain the offside rule in simple terms",
     "What earns a straight red card?",
 ]
-LANGUAGES = ["English", "Spanish", "Portuguese", "French", "Arabic"]
+LANGUAGES = ["English", "Spanish", "Portuguese", "French"]
 MAX_QUESTION_CHARS = 2000
 
 app = FastAPI(

@@ -8,7 +8,7 @@ const FALLBACK_ASKS = [
   'Explain the offside rule in simple terms',
   'What earns a straight red card?',
 ]
-const FALLBACK_LANGS = ['English', 'Spanish', 'Portuguese', 'French', 'Arabic']
+const FALLBACK_LANGS = ['English', 'Spanish', 'Portuguese', 'French']
 
 interface Props {
   config?: ApiConfig

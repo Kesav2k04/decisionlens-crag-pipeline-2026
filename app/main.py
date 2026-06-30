@@ -64,7 +64,6 @@ LANG_OPTIONS = {
     "Español": "Spanish",
     "Português": "Portuguese",
     "Français": "French",
-    "العربية": "Arabic",
 }
 
 QUICK_ASKS = [
