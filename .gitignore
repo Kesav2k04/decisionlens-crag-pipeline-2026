@@ -69,3 +69,8 @@ docs/SUBMISSION.md
 docs/screenshots/*
 !docs/screenshots/ui_main.png
 !docs/screenshots/ui_verdict.png
+
+# --- Test scripts and bloated binary noise ---
+pipeline/test_local_granite.py
+pipeline/test_embed_endpoint.py
+data/processed/chunks.json
